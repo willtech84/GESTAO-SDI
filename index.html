@@ -177,6 +177,9 @@
 
         /* ── SDI: Escala Mensal ── */
         .sdi-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+        .sdi-subnav { display: flex; gap: 6px; background: #eef2f6; border-radius: 12px; padding: 5px; margin-bottom: 14px; }
+        .sdi-subnav-btn { flex: 1; background: transparent; border: none; padding: 10px 6px; border-radius: 9px; font-size: 0.78rem; font-weight: 700; color: #607d8b; cursor: pointer; font-family: inherit; }
+        .sdi-subnav-btn.active { background: #1565c0; color: white; box-shadow: 0 2px 6px rgba(21,101,192,0.35); }
         .sdi-toolbar select { padding: 8px 10px; border: 1.5px solid #e0e7ef; border-radius: 8px; font-size: 0.85rem; font-family: inherit; }
         .btn-sdi { background: #1565c0; color: white; border: none; padding: 8px 13px; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; font-family: inherit; }
         .btn-sdi.g { background: #2e7d32; } .btn-sdi.o { background: #e65100; } .btn-sdi.p { background: #6a1b9a; } .btn-sdi.gy { background: #546e7a; }
@@ -201,8 +204,10 @@
         .sob-row select { flex: 1; padding: 7px 9px; border: 1.5px solid #e0e7ef; border-radius: 7px; font-family: inherit; font-size: 0.82rem; }
         @media print {
             body * { visibility: hidden; }
-            #print-area, #print-area * { visibility: visible; }
-            #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            body.print-mensal #print-area, body.print-mensal #print-area * { visibility: visible; }
+            body.print-mensal #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            body.print-sobreaviso #print-area-sobreaviso, body.print-sobreaviso #print-area-sobreaviso * { visibility: visible; }
+            body.print-sobreaviso #print-area-sobreaviso { position: absolute; left: 0; top: 0; width: 100%; }
         }
     </style>
 </head>
@@ -374,55 +379,84 @@
         <div class="sdi-toolbar">
             <select id="sdi-sel-ano"></select>
             <select id="sdi-sel-mes-num"></select>
-            <button class="btn-sdi" onclick="sdiTrocarMes()">📅 Carregar</button>
-            <button class="btn-sdi g" onclick="gerarEscalaAutomatica()">⚙️ Gerar Automática</button>
-            <button class="btn-sdi o" onclick="verificarDescansos()">⏱️ Verificar Descanso 12h</button>
-            <button class="btn-sdi p" onclick="gerarRelatorioSDI()">📄 Relatório</button>
-            <button class="btn-sdi gy" onclick="imprimirEscalaSDI()">🖨️ Imprimir</button>
-            <button class="btn-sdi gy" onclick="abrirImportarEscala()">📥 Importar da Foto</button>
+            <button class="btn-sdi" onclick="sdiTrocarMes()">📅 Carregar Mês</button>
+        </div>
+
+        <div class="sdi-subnav" id="sdi-subnav">
+            <button class="sdi-subnav-btn active" onclick="sdiSubTab('sobreaviso')">📋 Sobreaviso</button>
+            <button class="sdi-subnav-btn" onclick="sdiSubTab('lancamentos')">✏️ Lançamentos</button>
+            <button class="sdi-subnav-btn" onclick="sdiSubTab('grade')">🗓️ Grade Mensal</button>
         </div>
 
         <div class="rest-alert-box" id="rest-alert-box"></div>
 
-        <div class="sdi-section-title">📋 Escala de Sobreaviso do Mês (fins de semana)</div>
-        <div class="form-card">
-            <div id="sdi-sobreaviso-lista"></div>
-            <button class="btn-save" onclick="autoPreencherSobreaviso()">🔁 Preencher Automaticamente</button>
-        </div>
-
-        <div class="sdi-section-title">➕ Lançamento Individual</div>
-        <div class="form-card">
-            <div class="grid-inputs">
-                <div class="form-group"><label>Profissional</label><select id="li-prof"></select></div>
-                <div class="form-group"><label>Dia</label><select id="li-dia"></select></div>
-                <div class="form-group"><label>Tipo</label>
-                    <select id="li-tipo" onchange="onChangeLiTipo()">
-                        <option value="horario">Horário</option>
-                        <option value="folga">Folga (FE)</option>
-                        <option value="dsr">DSR</option>
-                        <option value="ferias">Férias</option>
-                    </select>
-                </div>
-                <div class="form-group" id="li-inicio-wrap"><label>Início</label><input type="time" id="li-inicio"></div>
-                <div class="form-group" id="li-fim-wrap"><label>Fim</label><input type="time" id="li-fim"></div>
+        <!-- MÓDULO: SOBREAVISO -->
+        <div class="sdi-mod" id="sdi-mod-sobreaviso">
+            <div class="sdi-section-title">📋 Escala de Sobreaviso do Mês (fins de semana)</div>
+            <div class="form-card">
+                <div id="sdi-sobreaviso-lista"></div>
+                <button class="btn-save" onclick="autoPreencherSobreaviso()">🔁 Preencher Automaticamente</button>
             </div>
-            <button class="btn-save" onclick="lancarIndividual()">Lançar</button>
+            <div class="sdi-toolbar">
+                <button class="btn-sdi p" onclick="gerarRelatorioSobreavisoSDI()">📄 Relatório de Sobreaviso</button>
+                <button class="btn-sdi gy" onclick="imprimirEscalaSobreavisoSDI()">🖨️ Imprimir Sobreaviso</button>
+            </div>
+            <div id="print-area-sobreaviso" class="grid-mensal-wrap">
+                <table class="grid-mensal" id="tbl-escala-sobreaviso"><thead></thead><tbody></tbody></table>
+            </div>
         </div>
 
-        <div class="sdi-section-title">🤖 Lançamento Automático (demais profissionais RX)</div>
-        <div class="form-card">
-            <p style="font-size:0.82rem;color:#546e7a;margin-bottom:10px">Repete o padrão de dias úteis do mês anterior e alterna os horários de fim de semana automaticamente, para os profissionais marcados como RX. Dias já bloqueados por sobreaviso não são sobrescritos.</p>
-            <button class="btn-save" onclick="lancarAutomaticoDemais()">Lançar Automaticamente os Demais</button>
+        <!-- MÓDULO: LANÇAMENTOS -->
+        <div class="sdi-mod" id="sdi-mod-lancamentos" style="display:none">
+            <div class="sdi-section-title">➕ Lançamento Individual</div>
+            <div class="form-card">
+                <div class="grid-inputs">
+                    <div class="form-group"><label>Profissional</label><select id="li-prof"></select></div>
+                    <div class="form-group"><label>Dia</label><select id="li-dia"></select></div>
+                    <div class="form-group"><label>Tipo</label>
+                        <select id="li-tipo" onchange="onChangeLiTipo()">
+                            <option value="horario">Horário</option>
+                            <option value="folga">Folga (FE)</option>
+                            <option value="dsr">DSR</option>
+                            <option value="ferias">Férias</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="li-inicio-wrap"><label>Início</label><input type="time" id="li-inicio"></div>
+                    <div class="form-group" id="li-fim-wrap"><label>Fim</label><input type="time" id="li-fim"></div>
+                </div>
+                <button class="btn-save" onclick="lancarIndividual()">Lançar</button>
+            </div>
+
+            <div class="sdi-section-title">🤖 Lançamento Automático (demais profissionais RX)</div>
+            <div class="form-card">
+                <p style="font-size:0.82rem;color:#546e7a;margin-bottom:10px">Repete o padrão de dias úteis do mês anterior e alterna os horários de fim de semana automaticamente, para os profissionais marcados como RX. Dias já bloqueados por sobreaviso não são sobrescritos.</p>
+                <button class="btn-save" onclick="lancarAutomaticoDemais()">Lançar Automaticamente os Demais</button>
+            </div>
+
+            <div class="sdi-section-title">📥 Importar da Foto</div>
+            <div class="form-card">
+                <p style="font-size:0.82rem;color:#546e7a;margin-bottom:10px">Cola o texto exato da escala impressa para preencher o mês com fidelidade total.</p>
+                <button class="btn-save" onclick="abrirImportarEscala()">Importar Escala Colando Texto</button>
+            </div>
         </div>
 
-        <div class="sdi-section-title">🗓️ Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
-        <div id="print-area">
-        <div class="grid-mensal-wrap">
-            <table class="grid-mensal" id="tbl-escala-mensal">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
-        </div>
+        <!-- MÓDULO: GRADE MENSAL -->
+        <div class="sdi-mod" id="sdi-mod-grade" style="display:none">
+            <div class="sdi-toolbar">
+                <button class="btn-sdi g" onclick="gerarEscalaAutomatica()">⚙️ Gerar Automática (Feriados)</button>
+                <button class="btn-sdi o" onclick="verificarDescansos()">⏱️ Verificar Descanso 12h</button>
+                <button class="btn-sdi p" onclick="gerarRelatorioSDI()">📄 Relatório da Grade</button>
+                <button class="btn-sdi gy" onclick="imprimirEscalaSDI()">🖨️ Imprimir Grade</button>
+            </div>
+            <div class="sdi-section-title">🗓️ Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
+            <div id="print-area">
+            <div class="grid-mensal-wrap">
+                <table class="grid-mensal" id="tbl-escala-mensal">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1651,7 +1685,7 @@ function setSobreaviso(dataStr, profId) {
     if (profId) allData.sdi.escalasSobreaviso[mesId][dataStr] = profId;
     else delete allData.sdi.escalasSobreaviso[mesId][dataStr];
     aplicarBloqueiosSobreaviso();
-    salvarLS(); renderEscalaMensal();
+    salvarLS(); renderEscalaMensal(); renderTabelaSobreavisoCalendario();
 }
 function autoPreencherSobreaviso() {
     var lista = sdiListaSobreaviso();
@@ -1670,7 +1704,7 @@ function autoPreencherSobreaviso() {
         allData.sdi.escalasSobreaviso[mesId][f.dataStr] = lista[idx].id;
     });
     aplicarBloqueiosSobreaviso();
-    salvarLS(); renderEscalaSobreaviso(); renderEscalaMensal();
+    salvarLS(); renderEscalaSobreaviso(); renderEscalaMensal(); renderTabelaSobreavisoCalendario();
 }
 function aplicarBloqueiosSobreaviso() {
     var mesId = sdiMesId(sdiAno, sdiMesNum);
@@ -1706,7 +1740,7 @@ function sdiTrocarMes() {
 }
 function renderTudoSdi() {
     popularSelectLiProf(); popularSelectLiDia();
-    renderEscalaSobreaviso(); renderEscalaMensal();
+    renderEscalaSobreaviso(); renderEscalaMensal(); renderTabelaSobreavisoCalendario();
     document.getElementById('rest-alert-box').classList.remove('show');
 }
 
@@ -1971,7 +2005,11 @@ function gerarRelatorioSDI() {
         doc.save('escala_sdi_' + mesId + '.pdf');
     } catch(ex) { alert('Erro ao gerar relatório: ' + ex.message); }
 }
-function imprimirEscalaSDI() { window.print(); }
+function imprimirEscalaSDI() {
+    document.body.classList.add('print-mensal');
+    window.print();
+    setTimeout(function(){ document.body.classList.remove('print-mensal'); }, 500);
+}
 
 /* ── IMPORTAÇÃO DE ESCALA MENSAL (texto colado, fiel à foto original) ── */
 function abrirImportarEscala() { document.getElementById('imp-texto').value = ''; abrirModal('modal-importar-escala'); }
@@ -2054,6 +2092,76 @@ function seedSdiInicial() {
     salvarLS();
 }
 
+/* ── SUB-NAVEGAÇÃO EM MÓDULOS (Escala Mensal) ── */
+function sdiSubTab(nome) {
+    ['sobreaviso','lancamentos','grade'].forEach(function(n) {
+        document.getElementById('sdi-mod-'+n).style.display = (n===nome) ? 'block' : 'none';
+    });
+    var btns = document.querySelectorAll('#sdi-subnav .sdi-subnav-btn');
+    btns.forEach(function(b){ b.classList.remove('active'); });
+    var idx = ['sobreaviso','lancamentos','grade'].indexOf(nome);
+    if (btns[idx]) btns[idx].classList.add('active');
+    if (nome === 'sobreaviso') renderTabelaSobreavisoCalendario();
+}
+
+/* ── TABELA/RELATÓRIO DEDICADO DE SOBREAVISO (formato calendário, igual à escala original) ── */
+function renderTabelaSobreavisoCalendario() {
+    var tbl = document.getElementById('tbl-escala-sobreaviso'); if (!tbl) return;
+    var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
+    var mesId = sdiMesId(sdiAno, sdiMesNum);
+    var atrib = allData.sdi.escalasSobreaviso[mesId] || {};
+    var thead = '<tr><th>Domingo</th><th>Segunda</th><th>Terça</th><th>Quarta</th><th>Quinta</th><th>Sexta</th><th>Sábado</th></tr>';
+    var primeiroDw = sdiDiaSemana(sdiAno, sdiMesNum, 1);
+    var celulas = [];
+    for (var i=0; i<primeiroDw; i++) celulas.push('<td></td>');
+    for (var d=1; d<=diasNoMes; d++) {
+        var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
+        var profId = atrib[dataStr];
+        var nome = '';
+        if (profId) { var p = allData.sdi.profissionais.find(function(x){ return x.id===profId; }); nome = p ? p.nome.toUpperCase() : ''; }
+        celulas.push('<td style="height:52px;vertical-align:top"><b>'+String(d).padStart(2,'0')+'</b>'+(nome?'<br>'+nome:'')+'</td>');
+    }
+    var linhas = '', semana = [];
+    celulas.forEach(function(c, i) {
+        semana.push(c);
+        if (semana.length === 7) { linhas += '<tr>'+semana.join('')+'</tr>'; semana = []; }
+    });
+    if (semana.length) { while (semana.length<7) semana.push('<td></td>'); linhas += '<tr>'+semana.join('')+'</tr>'; }
+    tbl.querySelector('thead').innerHTML = thead;
+    tbl.querySelector('tbody').innerHTML = linhas;
+}
+function gerarRelatorioSobreavisoSDI() {
+    try {
+        renderTabelaSobreavisoCalendario();
+        var doc = new window.jspdf.jsPDF({ orientation:'landscape' });
+        var mesId = sdiMesId(sdiAno, sdiMesNum);
+        var nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        doc.setFontSize(14); doc.text('Escala de Sobreaviso — ' + nomesMeses[sdiMesNum-1] + '/' + sdiAno, 14, 14);
+        var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
+        var atrib = allData.sdi.escalasSobreaviso[mesId] || {};
+        var head = [['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado']];
+        var primeiroDw = sdiDiaSemana(sdiAno, sdiMesNum, 1);
+        var celulas = []; for (var i=0;i<primeiroDw;i++) celulas.push('');
+        for (var d=1; d<=diasNoMes; d++) {
+            var profId = atrib[sdiDataStr(sdiAno, sdiMesNum, d)];
+            var nome = '';
+            if (profId) { var p = allData.sdi.profissionais.find(function(x){ return x.id===profId; }); nome = p ? p.nome : ''; }
+            celulas.push(String(d).padStart(2,'0') + (nome ? '\n'+nome : ''));
+        }
+        var body = [], semana = [];
+        celulas.forEach(function(c) { semana.push(c); if (semana.length===7) { body.push(semana); semana=[]; } });
+        if (semana.length) { while (semana.length<7) semana.push(''); body.push(semana); }
+        doc.autoTable({ head:head, body:body, startY:20, styles:{ fontSize:9, cellPadding:3, minCellHeight:16, valign:'top' }, headStyles:{ fillColor:[230,81,0] } });
+        doc.save('escala_sobreaviso_' + mesId + '.pdf');
+    } catch(ex) { alert('Erro ao gerar relatório de sobreaviso: ' + ex.message); }
+}
+function imprimirEscalaSobreavisoSDI() {
+    renderTabelaSobreavisoCalendario();
+    document.body.classList.add('print-sobreaviso');
+    window.print();
+    setTimeout(function(){ document.body.classList.remove('print-sobreaviso'); }, 500);
+}
+
 /* ── HOOK: inicialização do módulo SDI quando o app inicia ── */
 function iniciarSdiUi() {
     sdiInit();
@@ -2061,6 +2169,7 @@ function iniciarSdiUi() {
     popularSelectSdiMes();
     renderProfissionais();
     renderTudoSdi();
+    renderTabelaSobreavisoCalendario();
 }
 
 iniciarApp();
