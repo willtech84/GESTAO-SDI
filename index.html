@@ -305,6 +305,16 @@
  <button class="btn-sdi" onclick="sdiTrocarMes()">Carregar Mês</button>
  </div>
 
+ <div class="form-card" id="sdi-obs-card">
+ <label style="font-size:0.78rem;font-weight:700;color:#455a64;text-transform:uppercase;letter-spacing:.3px">Observações / Orientações do Mês</label>
+ <textarea id="sdi-obs-texto" rows="2" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit;font-size:0.85rem;margin-top:6px" placeholder="Ex: Trocas devem ser comunicadas com 48h de antecedência."></textarea>
+ <div class="chk-group" style="padding-top:8px">
+ <label class="chk-row"><input type="checkbox" id="sdi-obs-mensal"> Exibir na Escala Mensal (topo, ao lado do mês)</label>
+ <label class="chk-row"><input type="checkbox" id="sdi-obs-sobreaviso"> Exibir na Escala de Sobreaviso (rodapé)</label>
+ </div>
+ <button class="btn-save" onclick="salvarObservacaoSdi()">Salvar Observação</button>
+ </div>
+
  <div class="sdi-subnav" id="sdi-subnav">
  <button class="sdi-subnav-btn active" onclick="sdiSubTab('sobreaviso')">Sobreaviso</button>
  <button class="sdi-subnav-btn" onclick="sdiSubTab('lancamentos')">Lançamentos</button>
@@ -326,6 +336,7 @@
  </div>
  <div id="print-area-sobreaviso" class="grid-mensal-wrap">
  <table class="grid-mensal" id="tbl-escala-sobreaviso"><thead></thead><tbody></tbody></table>
+ <div id="sdi-obs-rodape-sobreaviso" style="padding:10px 12px;font-size:0.8rem;color:#455a64;border-top:1px solid #eceff1"></div>
  </div>
  </div>
 
@@ -369,6 +380,7 @@
  <p style="font-size:0.78rem;color:#90a4ae;margin:-4px 0 8px">Arraste o nome de um profissional (coluna à esquerda) e solte sobre outro para trocar as escalas do mês entre os dois.</p>
  <div class="sdi-section-title">Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
  <div id="print-area">
+ <div id="sdi-obs-topo-mensal" style="text-align:center;font-weight:600;color:#1565c0;font-size:0.85rem;padding-bottom:8px"></div>
  <div class="grid-mensal-wrap">
  <table class="grid-mensal" id="tbl-escala-mensal">
  <thead></thead>
@@ -1413,6 +1425,7 @@ function sdiInit() {
     if (!allData.sdi.feriados) allData.sdi.feriados = {};
     if (!allData.sdi.rotacaoFDS) allData.sdi.rotacaoFDS = {};
     if (!allData.sdi.trocas) allData.sdi.trocas = {};
+    if (!allData.sdi.observacoes) allData.sdi.observacoes = {};
 }
 
 var sdiAno = new Date().getFullYear();
@@ -1667,6 +1680,34 @@ function renderTudoSdi() {
     renderEscalaSobreaviso(); renderEscalaMensal(); renderTabelaSobreavisoCalendario();
     document.getElementById('rest-alert-box').classList.remove('show');
     if (document.getElementById('hist-sel-mes')) popularHistoricoSelects();
+    carregarObservacaoSdiUI();
+}
+
+/* ── OBSERVAÇÕES / ORIENTAÇÕES DO MÊS ── */
+function carregarObservacaoSdiUI() {
+    var mesId = sdiMesId(sdiAno, sdiMesNum);
+    var obs = allData.sdi.observacoes[mesId] || { texto:'', mensal:false, sobreaviso:false };
+    document.getElementById('sdi-obs-texto').value = obs.texto || '';
+    document.getElementById('sdi-obs-mensal').checked = !!obs.mensal;
+    document.getElementById('sdi-obs-sobreaviso').checked = !!obs.sobreaviso;
+    renderObservacoesSdi();
+}
+function salvarObservacaoSdi() {
+    var mesId = sdiMesId(sdiAno, sdiMesNum);
+    allData.sdi.observacoes[mesId] = {
+        texto: document.getElementById('sdi-obs-texto').value.trim(),
+        mensal: document.getElementById('sdi-obs-mensal').checked,
+        sobreaviso: document.getElementById('sdi-obs-sobreaviso').checked
+    };
+    salvarLS(); renderObservacoesSdi();
+}
+function renderObservacoesSdi() {
+    var mesId = sdiMesId(sdiAno, sdiMesNum);
+    var obs = allData.sdi.observacoes[mesId] || { texto:'', mensal:false, sobreaviso:false };
+    var topoMensal = document.getElementById('sdi-obs-topo-mensal');
+    var rodapeSob = document.getElementById('sdi-obs-rodape-sobreaviso');
+    if (topoMensal) topoMensal.textContent = (obs.mensal && obs.texto) ? obs.texto : '';
+    if (rodapeSob) rodapeSob.innerHTML = (obs.sobreaviso && obs.texto) ? ('<b>Observações:</b> ' + obs.texto) : '';
 }
 
 /* ── LANÇAMENTO INDIVIDUAL ── */
@@ -1835,6 +1876,7 @@ function renderEscalaMensal() {
         return row + '</tr>';
     }).join('');
     tbl.querySelector('tbody').innerHTML = tbody;
+    renderObservacoesSdi();
 }
 
 var _edProfId = null, _edDataStr = null;
@@ -1982,6 +2024,14 @@ function gerarRelatorioSDI() {
         var mesId = sdiMesId(sdiAno, sdiMesNum);
         var nomesMeses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         doc.setFontSize(14); doc.text('Gerenciamento SDI — Escala Mensal — ' + nomesMeses[sdiMesNum-1] + '/' + sdiAno, 14, 14);
+        var startY = 20;
+        var obs = allData.sdi.observacoes[mesId];
+        if (obs && obs.mensal && obs.texto) {
+            doc.setFontSize(9); doc.setTextColor(21,101,192);
+            doc.text(obs.texto, doc.internal.pageSize.getWidth()/2, 20, { align:'center', maxWidth: doc.internal.pageSize.getWidth()-40 });
+            doc.setTextColor(0,0,0);
+            startY = 26;
+        }
         var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
         var profs = allData.sdi.profissionais.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); });
         var mm = allData.sdi.escalasMensais[mesId] || {};
@@ -1996,7 +2046,7 @@ function gerarRelatorioSDI() {
             }
             return row;
         });
-        doc.autoTable({ head:head, body:body, startY:20, styles:{ fontSize:5.5, cellPadding:1 }, headStyles:{ fillColor:[21,101,192] } });
+        doc.autoTable({ head:head, body:body, startY:startY, styles:{ fontSize:5.5, cellPadding:1 }, headStyles:{ fillColor:[21,101,192] } });
         doc.save('escala_sdi_' + mesId + '.pdf');
     } catch(ex) { alert('Erro ao gerar relatório: ' + ex.message); }
 }
@@ -2161,6 +2211,7 @@ function renderTabelaSobreavisoCalendario() {
     if (semana.length) { while (semana.length<7) semana.push('<td></td>'); linhas += '<tr>'+semana.join('')+'</tr>'; }
     tbl.querySelector('thead').innerHTML = thead;
     tbl.querySelector('tbody').innerHTML = linhas;
+    renderObservacoesSdi();
 }
 function gerarRelatorioSobreavisoSDI() {
     try {
@@ -2184,6 +2235,13 @@ function gerarRelatorioSobreavisoSDI() {
         celulas.forEach(function(c) { semana.push(c); if (semana.length===7) { body.push(semana); semana=[]; } });
         if (semana.length) { while (semana.length<7) semana.push(''); body.push(semana); }
         doc.autoTable({ head:head, body:body, startY:20, styles:{ fontSize:9, cellPadding:3, minCellHeight:16, valign:'top' }, headStyles:{ fillColor:[230,81,0] } });
+        var obs = allData.sdi.observacoes[mesId];
+        if (obs && obs.sobreaviso && obs.texto) {
+            var finalY = doc.lastAutoTable.finalY + 10;
+            doc.setFontSize(9); doc.setFont(undefined,'bold'); doc.text('Observações:', 14, finalY);
+            doc.setFont(undefined,'normal');
+            doc.text(obs.texto, 14, finalY + 5, { maxWidth: doc.internal.pageSize.getWidth()-28 });
+        }
         doc.save('escala_sobreaviso_' + mesId + '.pdf');
     } catch(ex) { alert('Erro ao gerar relatório de sobreaviso: ' + ex.message); }
 }
