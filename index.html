@@ -1,19 +1,19 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gerenciamento SDI</title>
-    <link rel="manifest" href="manifest.json">
-    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon.png">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <meta name="theme-color" content="#1565c0">
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+ <title>Gerenciamento SDI</title>
+ <link rel="manifest" href="manifest.json">
+ <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+ <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon.png">
+ <link rel="apple-touch-icon" href="icons/icon-192.png">
+ <meta name="theme-color" content="#1565c0">
+ <script src="https://accounts.google.com/gsi/client" async defer></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+ <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+ <style>
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Inter', 'Segoe UI', sans-serif; background: #f0f4f8; min-height: 100vh; padding-bottom: 20px; }
@@ -60,7 +60,7 @@
         .esc-badge { background: #ff8f00; color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 0.68rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
         .btn-toggle-esc { background: #4e342e; color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 0.72rem; font-weight: 600; font-family: inherit; }
         .escala-item { display: grid; grid-template-columns: 1fr 90px 1fr 90px 36px; gap: 8px; margin-bottom: 10px; align-items: flex-end; border-bottom: 1px solid #ffe082; padding-bottom: 10px; }
-        @media (max-width: 599px) { .escala-item { grid-template-columns: 1fr 1fr; gap: 6px; } .escala-item > button { grid-column: 1 / -1; justify-self: start; } }
+        @media (max-width: 599px) { .escala-item { grid-template-columns: 1fr 1fr; gap: 6px; } .escala-item >button { grid-column: 1 / -1; justify-self: start; } }
         .form-group { display: flex; flex-direction: column; gap: 4px; }
         .form-group label { font-size: 0.68rem; font-weight: 700; color: #6d4c41; text-transform: uppercase; letter-spacing: 0.3px; }
         .form-group input, .form-group select { padding: 8px 10px; border: 1.5px solid #ffe082; border-radius: 8px; font-size: 0.85rem; font-family: inherit; background: white; color: #263238; outline: none; }
@@ -187,7 +187,9 @@
         .grid-mensal-wrap { overflow-x: auto; border-radius: 10px; border: 1.5px solid #e8edf2; }
         table.grid-mensal { border-collapse: collapse; font-size: 0.68rem; white-space: nowrap; }
         table.grid-mensal th, table.grid-mensal td { border: 1px solid #eceff1; padding: 4px 5px; text-align: center; }
-        table.grid-mensal th.prof-col, table.grid-mensal td.prof-col { position: sticky; left: 0; background: #fff; z-index: 2; text-align: left; font-weight: 700; color: #263238; min-width: 96px; }
+        table.grid-mensal th.prof-col, table.grid-mensal td.prof-col { position: sticky; left: 0; background: #fff; z-index: 2; text-align: left; font-weight: 700; color: #263238; min-width: 96px; cursor: grab; }
+        table.grid-mensal td.prof-col.drag-over { background: #bbdefb; outline: 2px dashed #1565c0; }
+        table.grid-mensal td.prof-col.dragging { opacity: 0.4; }
         table.grid-mensal th { background: #1565c0; color: white; font-weight: 600; }
         table.grid-mensal th.feriado { background: #c62828; }
         table.grid-mensal th.finde { background: #ff8f00; }
@@ -209,390 +211,314 @@
             body.print-sobreaviso #print-area-sobreaviso, body.print-sobreaviso #print-area-sobreaviso * { visibility: visible; }
             body.print-sobreaviso #print-area-sobreaviso { position: absolute; left: 0; top: 0; width: 100%; }
         }
-    </style>
+ </style>
 </head>
 <body>
 
 
 <div id="login-screen">
-    <div class="login-box">
-        <h2>📡 GERENCIAMENTO SDI</h2>
-        <p class="login-sub" id="login-subtitle">Escalas &amp; Sobreaviso</p>
-        <div id="login-form-area">
-            <div class="lf"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com"></div>
-            <div class="lf"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••" onkeydown="if(event.key==='Enter')fazerLogin()"></div>
-            <label class="login-rem"><input type="checkbox" id="login-lembrar"> Lembrar e-mail e senha</label>
-            <p class="login-err" id="login-erro">E-mail ou senha incorretos.</p>
-            <button class="btn-lp" onclick="fazerLogin()">Entrar</button>
-            <button class="btn-ls" onclick="mostrarFormCadastro()">Criar conta</button>
-        </div>
-        <div id="cadastro-form-area" style="display:none">
-            <div class="lf"><label>Nome completo</label><input type="text" id="cad-nome" placeholder="Seu nome"></div>
-            <div class="lf"><label>E-mail</label><input type="email" id="cad-email" placeholder="seu@email.com"></div>
-            <div class="lf"><label>WhatsApp</label><input type="tel" id="cad-whatsapp" placeholder="(47) 99999-9999"></div>
-            <div class="lf"><label>Senha</label><input type="password" id="cad-senha" placeholder="Mínimo 4 caracteres"></div>
-            <p class="login-err" id="cad-erro">Preencha todos os campos.</p>
-            <button class="btn-lp" onclick="fazerCadastro()">Cadastrar</button>
-            <button class="btn-ls" onclick="mostrarFormLogin()">Já tenho conta</button>
-        </div>
-    </div>
+ <div class="login-box">
+ <h2>GERENCIAMENTO SDI</h2>
+ <p class="login-sub" id="login-subtitle">Escalas &amp; Sobreaviso</p>
+ <div id="login-form-area">
+ <div class="lf"><label>E-mail</label><input type="email" id="login-email" placeholder="seu@email.com"></div>
+ <div class="lf"><label>Senha</label><input type="password" id="login-senha" placeholder="••••••" onkeydown="if(event.key==='Enter')fazerLogin()"></div>
+ <label class="login-rem"><input type="checkbox" id="login-lembrar">Lembrar e-mail e senha</label>
+ <p class="login-err" id="login-erro">E-mail ou senha incorretos.</p>
+ <button class="btn-lp" onclick="fazerLogin()">Entrar</button>
+ <button class="btn-ls" onclick="mostrarFormCadastro()">Criar conta</button>
+ </div>
+ <div id="cadastro-form-area" style="display:none">
+ <div class="lf"><label>Nome completo</label><input type="text" id="cad-nome" placeholder="Seu nome"></div>
+ <div class="lf"><label>E-mail</label><input type="email" id="cad-email" placeholder="seu@email.com"></div>
+ <div class="lf"><label>WhatsApp</label><input type="tel" id="cad-whatsapp" placeholder="(47) 99999-9999"></div>
+ <div class="lf"><label>Senha</label><input type="password" id="cad-senha" placeholder="Mínimo 4 caracteres"></div>
+ <p class="login-err" id="cad-erro">Preencha todos os campos.</p>
+ <button class="btn-lp" onclick="fazerCadastro()">Cadastrar</button>
+ <button class="btn-ls" onclick="mostrarFormLogin()">Já tenho conta</button>
+ </div>
+ </div>
 </div>
 
 <div class="app-header">
-    <div class="header-inner">
-        <div class="header-top-row">
-            <div class="header-brand">
-                <div class="header-logo">🩻</div>
-                <div>
-                    <div class="header-title">GERENCIAMENTO SDI</div>
-                    <div class="header-subtitle">Escalas, Sobreaviso e Controle de Plantão</div>
-                </div>
-            </div>
-            <div class="header-badges">
-                <div id="user-badge" class="badge-user-pill"></div>
-                <span id="backup-status" class="offline">☁️ Drive</span>
-            </div>
-        </div>
-    </div>
+ <div class="header-inner">
+ <div class="header-top-row">
+ <div class="header-brand">
+ <div class="header-logo">SDI</div>
+ <div>
+ <div class="header-title">GERENCIAMENTO SDI</div>
+ <div class="header-subtitle">Escalas, Sobreaviso e Controle de Plantão</div>
+ </div>
+ </div>
+ <div class="header-badges">
+ <div id="user-badge" class="badge-user-pill"></div>
+ <span id="backup-status" class="offline">☁ Drive</span>
+ </div>
+ </div>
+ </div>
 </div>
 
 <div class="content-wrap">
-    <div class="btn-grid">
-        <button class="btn-action c-blue" onclick="conectarGDrive()"><span class="bi">☁️</span><span class="bl">Conectar Drive</span></button>
-        <button class="btn-action c-green" onclick="restaurarDoDrive()"><span class="bi">⬇️</span><span class="bl">Rest. Drive</span></button>
-        <button class="btn-action c-orange" onclick="fazerBackupLocal()"><span class="bi">💾</span><span class="bl">Backup</span></button>
-        <button class="btn-action c-teal" onclick="document.getElementById('fileInput').click()"><span class="bi">📂</span><span class="bl">Importar</span></button>
-        <button class="btn-action c-violet" onclick="abrirFiltroRelatorio('print')"><span class="bi">📊</span><span class="bl">Relatório</span></button>
-        <button class="btn-action c-pink" onclick="imprimirTodasFichas()"><span class="bi">📋</span><span class="bl">Fichas</span></button>
-        <button class="btn-action c-gray" onclick="abrirHistorico()"><span class="bi">🕐</span><span class="bl">Histórico</span></button>
-        <button class="btn-action c-purple" onclick="abrirUsuarios()"><span class="bi">👤</span><span class="bl">Usuários</span></button>
-        <input type="file" id="fileInput" style="display:none" onchange="restaurarBackup(this)">
-    </div>
+ <div class="btn-grid">
+ <button class="btn-action c-blue" onclick="conectarGDrive()"><span class="bi">☁</span><span class="bl">Conectar Drive</span></button>
+ <button class="btn-action c-green" onclick="restaurarDoDrive()"><span class="bi">↓</span><span class="bl">Rest. Drive</span></button>
+ <button class="btn-action c-orange" onclick="fazerBackupLocal()"><span class="bi">↧</span><span class="bl">Backup</span></button>
+ <button class="btn-action c-teal" onclick="document.getElementById('fileInput').click()"><span class="bi">↥</span><span class="bl">Importar</span></button>
+ <button class="btn-action c-purple" onclick="abrirUsuarios()"><span class="bi">◉</span><span class="bl">Usuários</span></button>
+ <input type="file" id="fileInput" style="display:none" onchange="restaurarBackup(this)">
+ </div>
 
-    <div class="prof-card">
-        <span>👤</span>
-        <input type="text" id="userName" placeholder="Nome do profissional" oninput="salvarDados()">
-    </div>
+ <div class="tabs-bar">
+ <button class="tab-btn active" onclick="tab(event,'sdi-profissionais')">Cadastro</button>
+ <button class="tab-btn" onclick="tab(event,'sdi-escala-mensal')">Escalas</button>
+ <button class="tab-btn" onclick="tab(event,'sdi-historico')">Histórico</button>
+ </div>
 
-    <div class="mes-card">
-        <span class="mi">📅</span>
-        <select id="sel-mes" onchange="trocarMes()"></select>
-        <button class="btn-mes-new" onclick="novoMes()">+ Novo Mês</button>
-        <button class="btn-mes-del" onclick="excluirMesAtual()">🗑</button>
-    </div>
+ <!-- ═══ SDI: PROFISSIONAIS ═══ -->
+ <div id="sdi-profissionais" class="tab-content active">
+ <div class="form-card">
+ <input type="hidden" id="pf-id">
+ <div class="grid-inputs">
+ <div class="form-group"><label>Nome</label><input type="text" id="pf-nome" placeholder="Nome do profissional"></div>
+ <div class="form-group"><label>Telefone</label><input type="tel" id="pf-telefone" placeholder="(47) 90000-0000"></div>
+ </div>
+ <div class="chk-group">
+ <label class="chk-row"><input type="checkbox" id="pf-rx" onchange="onChangePfAtividade()">RX</label>
+ <label class="chk-row"><input type="checkbox" id="pf-tc" onchange="onChangePfAtividade()">TC</label>
+ <label class="chk-row"><input type="checkbox" id="pf-rm" onchange="onChangePfAtividade()">RM</label>
+ <label class="chk-row"><input type="checkbox" id="pf-sob" onchange="onChangePfAtividade()" disabled>Faz Sobreaviso</label>
+ </div>
+ <div class="grid-inputs" id="pf-subid-wrap" style="display:none">
+ <div class="form-group"><label>Sub-identificação (sobreaviso)</label><input type="text" id="pf-subid" placeholder="Ex: SDI-TC1"></div>
+ </div>
+ <button id="btn-save-pf" class="btn-save" onclick="salvarProfissional()">Salvar Profissional</button>
+ <button id="btn-cancel-pf" class="btn-cancel-form" onclick="limparCamposProfissional()">Cancelar</button>
+ </div>
+ <div id="lista-profissionais"></div>
+ </div>
 
-    <div class="escalas-card">
-        <div class="esc-header">
-            <div class="esc-title">📋 Escalas de Sobreaviso <span class="esc-badge" id="escala-count">0</span></div>
-            <button class="btn-toggle-esc" id="btn-toggle-esc" onclick="toggleEscalas()">▶ Mostrar</button>
-        </div>
-        <div id="escalas-body" style="display:none">
-            <div id="lista-escalas"></div>
-            <button class="btn-add-esc" onclick="addEscala()">+ Adicionar Escala</button>
-        </div>
-    </div>
+ <!-- ═══ SDI: ESCALA MENSAL ═══ -->
+ <div id="sdi-escala-mensal" class="tab-content">
+ <div class="sdi-toolbar">
+ <select id="sdi-sel-ano"></select>
+ <select id="sdi-sel-mes-num"></select>
+ <button class="btn-sdi" onclick="sdiTrocarMes()">Carregar Mês</button>
+ </div>
 
-    <div class="tabs-bar">
-        <button class="tab-btn" onclick="tab(event,'sdi-profissionais')">👥 Profissionais</button>
-        <button class="tab-btn" onclick="tab(event,'sdi-escala-mensal')">🗓️ Escala Mensal</button>
-        <button class="tab-btn active" onclick="tab(event,'exames')">📋 Exames</button>
-        <button class="tab-btn" onclick="tab(event,'corridas')">🚗 Corridas</button>
-        <button class="tab-btn" onclick="tab(event,'resumo')">📊 Resumo</button>
-        <button class="tab-btn tab-btn-new" onclick="tab(event,'corridas')" style="margin-left:auto;background:#1565c0;color:white;border-radius:8px;padding:7px 12px;font-size:0.78rem">🚗 Nova Corrida</button>
-        <button class="tab-btn tab-btn-new" onclick="tab(event,'exames')" style="background:#2e7d32;color:white;border-radius:8px;padding:7px 12px;font-size:0.78rem">➕ Novo Exame</button>
-    </div>
+ <div class="sdi-subnav" id="sdi-subnav">
+ <button class="sdi-subnav-btn active" onclick="sdiSubTab('sobreaviso')">Sobreaviso</button>
+ <button class="sdi-subnav-btn" onclick="sdiSubTab('lancamentos')">Lançamentos</button>
+ <button class="sdi-subnav-btn" onclick="sdiSubTab('grade')">Grade Mensal</button>
+ </div>
 
-    <div id="exames" class="tab-content active">
-        <div class="form-card">
-            <input type="hidden" id="ex-id">
-            <div class="grid-inputs">
-                <div class="form-group"><label>Data</label><input type="date" id="ex-data"></div>
-                <div class="form-group"><label>Horário</label><input type="time" id="ex-hora"></div>
-                <div class="form-group"><label>Setor</label><input type="text" id="ex-setor" oninput="this.value=this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Exame</label><input type="text" id="ex-nome" oninput="this.value=this.value.toUpperCase()"></div>
-                <div class="form-group"><label>Paciente</label><input type="text" id="ex-pac" oninput="this.value=this.value.toUpperCase()"></div>
-            </div>
-            <button id="btn-save-ex" class="btn-save" onclick="addExame()">Salvar Exame</button>
-            <button id="btn-cancel-ex" class="btn-cancel-form" onclick="limparCamposExame(true)">Cancelar</button>
-        </div>
-        <div class="tbl-toggle-bar">
-            <span class="tbl-toggle-label">📋 Exames registrados (<span id="exames-count">0</span>)</span>
-            <button class="btn-tbl-toggle" id="btn-toggle-tbl-ex" onclick="toggleTabelaExames()">▶ Mostrar</button>
-        </div>
-        <div id="tbl-exames-wrapper" style="display:none">
-            <div class="tbl-wrap">
-                <table id="tbl-exames">
-                    <thead><tr><th>Data</th><th>Hora</th><th>Setor</th><th>Exame</th><th>Paciente</th><th>Ações</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        </div>
-    </div>
+ <div class="rest-alert-box" id="rest-alert-box"></div>
 
-    <div id="corridas" class="tab-content">
-        <div class="form-card">
-            <input type="hidden" id="co-id">
-            <div class="grid-inputs">
-                <div class="form-group"><label>Data</label><input type="date" id="co-data"></div>
-                <div class="form-group"><label>Entrada</label><input type="time" id="co-in"></div>
-                <div class="form-group"><label>Saída</label><input type="time" id="co-out"></div>
-                <div class="form-group"><label>KM</label><input type="number" step="0.1" id="co-km"></div>
-                <div class="form-group"><label>Setor</label><input type="text" id="co-setor" oninput="this.value=this.value.toUpperCase()"></div>
-            </div>
-            <button id="btn-save-co" class="btn-save" onclick="addCorrida()">Salvar Corrida</button>
-            <button id="btn-cancel-co" class="btn-cancel-form" onclick="limparCamposCorrida()">Cancelar</button>
-        </div>
-        <div class="tbl-wrap" style="margin-top:4px">
-            <table id="tbl-corridas">
-                <thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Tempo</th><th>KM</th><th>Setor</th><th>Ações</th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
+ <!-- MÓDULO: SOBREAVISO -->
+ <div class="sdi-mod" id="sdi-mod-sobreaviso">
+ <div class="sdi-section-title">Escala de Sobreaviso do Mês (fins de semana)</div>
+ <div class="form-card">
+ <div id="sdi-sobreaviso-lista"></div>
+ <button class="btn-save" onclick="autoPreencherSobreaviso()">Preencher Automaticamente</button>
+ </div>
+ <div class="sdi-toolbar">
+ <button class="btn-sdi p" onclick="gerarRelatorioSobreavisoSDI()">Relatório de Sobreaviso</button>
+ <button class="btn-sdi gy" onclick="imprimirEscalaSobreavisoSDI()">Imprimir Sobreaviso</button>
+ </div>
+ <div id="print-area-sobreaviso" class="grid-mensal-wrap">
+ <table class="grid-mensal" id="tbl-escala-sobreaviso"><thead></thead><tbody></tbody></table>
+ </div>
+ </div>
 
-    <div id="resumo" class="tab-content"><div id="resumo-conteudo"></div></div>
+ <!-- MÓDULO: LANÇAMENTOS -->
+ <div class="sdi-mod" id="sdi-mod-lancamentos" style="display:none">
+ <div class="sdi-section-title">Lançamento Individual</div>
+ <div class="form-card">
+ <div class="grid-inputs">
+ <div class="form-group"><label>Profissional</label><select id="li-prof"></select></div>
+ <div class="form-group"><label>Dia</label><select id="li-dia"></select></div>
+ <div class="form-group"><label>Tipo</label>
+ <select id="li-tipo" onchange="onChangeLiTipo()">
+ <option value="horario">Horário</option>
+ <option value="folga">Folga (FE)</option>
+ <option value="dsr">DSR</option>
+ <option value="ferias">Férias</option>
+ </select>
+ </div>
+ <div class="form-group" id="li-inicio-wrap"><label>Início</label><input type="time" id="li-inicio"></div>
+ <div class="form-group" id="li-fim-wrap"><label>Fim</label><input type="time" id="li-fim"></div>
+ </div>
+ <button class="btn-save" onclick="lancarIndividual()">Lançar</button>
+ </div>
 
-    <!-- ═══ SDI: PROFISSIONAIS ═══ -->
-    <div id="sdi-profissionais" class="tab-content">
-        <div class="form-card">
-            <input type="hidden" id="pf-id">
-            <div class="grid-inputs">
-                <div class="form-group"><label>Nome</label><input type="text" id="pf-nome" placeholder="Nome do profissional"></div>
-            </div>
-            <div class="chk-group">
-                <label class="chk-row"><input type="checkbox" id="pf-rx" onchange="onChangePfAtividade()"> RX</label>
-                <label class="chk-row"><input type="checkbox" id="pf-tc" onchange="onChangePfAtividade()"> TC</label>
-                <label class="chk-row"><input type="checkbox" id="pf-rm" onchange="onChangePfAtividade()"> RM</label>
-                <label class="chk-row"><input type="checkbox" id="pf-sob" onchange="onChangePfAtividade()" disabled> Faz Sobreaviso</label>
-            </div>
-            <div class="grid-inputs" id="pf-subid-wrap" style="display:none">
-                <div class="form-group"><label>Sub-identificação (sobreaviso)</label><input type="text" id="pf-subid" placeholder="Ex: SDI-TC1"></div>
-            </div>
-            <button id="btn-save-pf" class="btn-save" onclick="salvarProfissional()">Salvar Profissional</button>
-            <button id="btn-cancel-pf" class="btn-cancel-form" onclick="limparCamposProfissional()">Cancelar</button>
-        </div>
-        <div id="lista-profissionais"></div>
-    </div>
+ <div class="sdi-section-title">Lançamento Automático (demais profissionais RX)</div>
+ <div class="form-card">
+ <p style="font-size:0.82rem;color:#546e7a;margin-bottom:10px">Repete o padrão de dias úteis do mês anterior e alterna os horários de fim de semana automaticamente, para os profissionais marcados como RX. Dias já bloqueados por sobreaviso não são sobrescritos.</p>
+ <button class="btn-save" onclick="lancarAutomaticoDemais()">Lançar Automaticamente os Demais</button>
+ </div>
+ </div>
 
-    <!-- ═══ SDI: ESCALA MENSAL ═══ -->
-    <div id="sdi-escala-mensal" class="tab-content">
-        <div class="sdi-toolbar">
-            <select id="sdi-sel-ano"></select>
-            <select id="sdi-sel-mes-num"></select>
-            <button class="btn-sdi" onclick="sdiTrocarMes()">📅 Carregar Mês</button>
-        </div>
+ <!-- MÓDULO: GRADE MENSAL -->
+ <div class="sdi-mod" id="sdi-mod-grade" style="display:none">
+ <div class="sdi-toolbar">
+ <button class="btn-sdi g" onclick="gerarEscalaAutomatica()">Gerar Automática (Feriados)</button>
+ <button class="btn-sdi o" onclick="verificarDescansos()">Verificar Descanso 12h</button>
+ <button class="btn-sdi p" onclick="gerarRelatorioSDI()">Relatório da Grade</button>
+ <button class="btn-sdi gy" onclick="imprimirEscalaSDI()">Imprimir Grade</button>
+ <button class="btn-sdi gy" onclick="gerarPdfTodosIndividuais()">PDF Individual — Todos</button>
+ </div>
+ <p style="font-size:0.78rem;color:#90a4ae;margin:-4px 0 8px">Arraste o nome de um profissional (coluna à esquerda) e solte sobre outro para trocar as escalas do mês entre os dois.</p>
+ <div class="sdi-section-title">Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
+ <div id="print-area">
+ <div class="grid-mensal-wrap">
+ <table class="grid-mensal" id="tbl-escala-mensal">
+ <thead></thead>
+ <tbody></tbody>
+ </table>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
 
-        <div class="sdi-subnav" id="sdi-subnav">
-            <button class="sdi-subnav-btn active" onclick="sdiSubTab('sobreaviso')">📋 Sobreaviso</button>
-            <button class="sdi-subnav-btn" onclick="sdiSubTab('lancamentos')">✏️ Lançamentos</button>
-            <button class="sdi-subnav-btn" onclick="sdiSubTab('grade')">🗓️ Grade Mensal</button>
-        </div>
+<!-- SDI: HISTÓRICO -->
+<div id="sdi-historico" class="tab-content">
+ <div class="sdi-toolbar">
+ <select id="hist-sel-mes"></select>
+ <select id="hist-sel-prof"><option value="">Todos os profissionais</option></select>
+ <button class="btn-sdi" onclick="renderHistorico()">Consultar</button>
+ </div>
 
-        <div class="rest-alert-box" id="rest-alert-box"></div>
+ <div class="sdi-section-title">Escala do Mês Selecionado</div>
+ <div class="grid-mensal-wrap">
+ <table class="grid-mensal" id="tbl-historico-grade"><thead></thead><tbody></tbody></table>
+ </div>
 
-        <!-- MÓDULO: SOBREAVISO -->
-        <div class="sdi-mod" id="sdi-mod-sobreaviso">
-            <div class="sdi-section-title">📋 Escala de Sobreaviso do Mês (fins de semana)</div>
-            <div class="form-card">
-                <div id="sdi-sobreaviso-lista"></div>
-                <button class="btn-save" onclick="autoPreencherSobreaviso()">🔁 Preencher Automaticamente</button>
-            </div>
-            <div class="sdi-toolbar">
-                <button class="btn-sdi p" onclick="gerarRelatorioSobreavisoSDI()">📄 Relatório de Sobreaviso</button>
-                <button class="btn-sdi gy" onclick="imprimirEscalaSobreavisoSDI()">🖨️ Imprimir Sobreaviso</button>
-            </div>
-            <div id="print-area-sobreaviso" class="grid-mensal-wrap">
-                <table class="grid-mensal" id="tbl-escala-sobreaviso"><thead></thead><tbody></tbody></table>
-            </div>
-        </div>
-
-        <!-- MÓDULO: LANÇAMENTOS -->
-        <div class="sdi-mod" id="sdi-mod-lancamentos" style="display:none">
-            <div class="sdi-section-title">➕ Lançamento Individual</div>
-            <div class="form-card">
-                <div class="grid-inputs">
-                    <div class="form-group"><label>Profissional</label><select id="li-prof"></select></div>
-                    <div class="form-group"><label>Dia</label><select id="li-dia"></select></div>
-                    <div class="form-group"><label>Tipo</label>
-                        <select id="li-tipo" onchange="onChangeLiTipo()">
-                            <option value="horario">Horário</option>
-                            <option value="folga">Folga (FE)</option>
-                            <option value="dsr">DSR</option>
-                            <option value="ferias">Férias</option>
-                        </select>
-                    </div>
-                    <div class="form-group" id="li-inicio-wrap"><label>Início</label><input type="time" id="li-inicio"></div>
-                    <div class="form-group" id="li-fim-wrap"><label>Fim</label><input type="time" id="li-fim"></div>
-                </div>
-                <button class="btn-save" onclick="lancarIndividual()">Lançar</button>
-            </div>
-
-            <div class="sdi-section-title">🤖 Lançamento Automático (demais profissionais RX)</div>
-            <div class="form-card">
-                <p style="font-size:0.82rem;color:#546e7a;margin-bottom:10px">Repete o padrão de dias úteis do mês anterior e alterna os horários de fim de semana automaticamente, para os profissionais marcados como RX. Dias já bloqueados por sobreaviso não são sobrescritos.</p>
-                <button class="btn-save" onclick="lancarAutomaticoDemais()">Lançar Automaticamente os Demais</button>
-            </div>
-
-            <div class="sdi-section-title">📥 Importar da Foto</div>
-            <div class="form-card">
-                <p style="font-size:0.82rem;color:#546e7a;margin-bottom:10px">Cola o texto exato da escala impressa para preencher o mês com fidelidade total.</p>
-                <button class="btn-save" onclick="abrirImportarEscala()">Importar Escala Colando Texto</button>
-            </div>
-        </div>
-
-        <!-- MÓDULO: GRADE MENSAL -->
-        <div class="sdi-mod" id="sdi-mod-grade" style="display:none">
-            <div class="sdi-toolbar">
-                <button class="btn-sdi g" onclick="gerarEscalaAutomatica()">⚙️ Gerar Automática (Feriados)</button>
-                <button class="btn-sdi o" onclick="verificarDescansos()">⏱️ Verificar Descanso 12h</button>
-                <button class="btn-sdi p" onclick="gerarRelatorioSDI()">📄 Relatório da Grade</button>
-                <button class="btn-sdi gy" onclick="imprimirEscalaSDI()">🖨️ Imprimir Grade</button>
-            </div>
-            <div class="sdi-section-title">🗓️ Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
-            <div id="print-area">
-            <div class="grid-mensal-wrap">
-                <table class="grid-mensal" id="tbl-escala-mensal">
-                    <thead></thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-            </div>
-        </div>
-    </div>
+ <div class="sdi-section-title">Trocas Registradas no Mês</div>
+ <div id="hist-trocas-lista" class="form-card"></div>
 </div>
 
 
 
 <!-- Modais -->
 <div class="modal-overlay" id="modal-corrida-aberta">
-    <div class="modal-box"><h3>⚠️ Corrida sem horário de saída</h3>
-    <p>Esta corrida está <b>em aberto</b>. Deseja salvar assim mesmo?</p>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-corrida-aberta')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button onclick="confirmarCorridaAberta()" style="background:#2e7d32;color:white">Sim, salvar</button>
-    </div></div>
+ <div class="modal-box"><h3>Corrida sem horário de saída</h3>
+ <p>Esta corrida está <b>em aberto</b>. Deseja salvar assim mesmo?</p>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-corrida-aberta')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button onclick="confirmarCorridaAberta()" style="background:#2e7d32;color:white">Sim, salvar</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-del">
-    <div class="modal-box danger"><h3>🗑️ Confirmar exclusão</h3>
-    <p id="modal-del-msg">Tem certeza?</p>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-del')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button id="modal-del-confirm" style="background:#c62828;color:white">Excluir</button>
-    </div></div>
+ <div class="modal-box danger"><h3>Confirmar exclusão</h3>
+ <p id="modal-del-msg">Tem certeza?</p>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-del')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button id="modal-del-confirm" style="background:#c62828;color:white">Excluir</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-hist">
-    <div class="modal-box" style="max-width:500px"><h3 style="color:#1565c0">🗂️ Histórico de Meses</h3>
-    <p>Selecione um ou mais meses:</p>
-    <div class="hist-lista" id="hist-lista"></div>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-hist')" style="background:#eceff1;color:#546e7a">Fechar</button>
-        <button onclick="relatorioHistorico('print')" style="background:#4527a0;color:white">🖨️ Relatório</button>
-        <button onclick="relatorioHistorico('pdf')" style="background:#c62828;color:white">📄 PDF</button>
-    </div></div>
+ <div class="modal-box" style="max-width:500px"><h3 style="color:#1565c0">Histórico de Meses</h3>
+ <p>Selecione um ou mais meses:</p>
+ <div class="hist-lista" id="hist-lista"></div>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-hist')" style="background:#eceff1;color:#546e7a">Fechar</button>
+ <button onclick="relatorioHistorico('print')" style="background:#4527a0;color:white">Relatório</button>
+ <button onclick="relatorioHistorico('pdf')" style="background:#c62828;color:white">PDF</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-filtro-rel">
-    <div class="modal-box" style="max-width:460px"><h3 style="color:#1565c0" id="modal-filtro-titulo">📄 Gerar Relatório</h3>
-    <div class="filtro-tipo-btn">
-        <button id="btn-filtro-mes" class="ativo" onclick="alternarFiltroTipo('mes')">📅 Mês completo</button>
-        <button id="btn-filtro-esc" onclick="alternarFiltroTipo('escala')">📋 Por escala</button>
-    </div>
-    <div id="filtro-mes-area"><p>Relatório completo do mês ativo.</p></div>
-    <div id="filtro-esc-area" style="display:none">
-        <p>Selecione uma ou mais escalas:</p>
-        <div class="filtro-opcoes" id="filtro-escalas-lista"></div>
-    </div>
-    <div style="margin-bottom:14px;padding:10px;background:#f8f9fa;border-radius:10px;border:1.5px solid #e8edf2">
-        <label style="font-size:0.75rem;font-weight:700;color:#546e7a;display:block;margin-bottom:6px">📬 Data de entrega (opcional)</label>
-        <input type="date" id="filtro-data-entrega" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-size:0.88rem;font-family:inherit">
-    </div>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-filtro-rel')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button id="btn-filtro-gerar" onclick="gerarComFiltro()" style="background:#c62828;color:white">Gerar</button>
-    </div></div>
+ <div class="modal-box" style="max-width:460px"><h3 style="color:#1565c0" id="modal-filtro-titulo">Gerar Relatório</h3>
+ <div class="filtro-tipo-btn">
+ <button id="btn-filtro-mes" class="ativo" onclick="alternarFiltroTipo('mes')">Mês completo</button>
+ <button id="btn-filtro-esc" onclick="alternarFiltroTipo('escala')">Por escala</button>
+ </div>
+ <div id="filtro-mes-area"><p>Relatório completo do mês ativo.</p></div>
+ <div id="filtro-esc-area" style="display:none">
+ <p>Selecione uma ou mais escalas:</p>
+ <div class="filtro-opcoes" id="filtro-escalas-lista"></div>
+ </div>
+ <div style="margin-bottom:14px;padding:10px;background:#f8f9fa;border-radius:10px;border:1.5px solid #e8edf2">
+ <label style="font-size:0.75rem;font-weight:700;color:#546e7a;display:block;margin-bottom:6px">Data de entrega (opcional)</label>
+ <input type="date" id="filtro-data-entrega" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-size:0.88rem;font-family:inherit">
+ </div>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-filtro-rel')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button id="btn-filtro-gerar" onclick="gerarComFiltro()" style="background:#c62828;color:white">Gerar</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-rest-drive">
-    <div class="modal-box danger"><h3>⬇️ Restaurar do Google Drive</h3>
-    <p>Irá <b>sobrescrever os dados locais</b>. Tem certeza?</p>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-rest-drive')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button onclick="confirmarRestaurarDrive()" style="background:#c62828;color:white">Sim, restaurar</button>
-    </div></div>
+ <div class="modal-box danger"><h3>⬇ Restaurar do Google Drive</h3>
+ <p>Irá <b>sobrescrever os dados locais</b>. Tem certeza?</p>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-rest-drive')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button onclick="confirmarRestaurarDrive()" style="background:#c62828;color:white">Sim, restaurar</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-novo-mes">
-    <div class="modal-box"><h3 style="color:#1565c0">📅 Novo mês</h3>
-    <p>Nome do novo mês:</p>
-    <input type="text" id="input-novo-mes" placeholder="Ex: Junho 2026" style="width:100%;padding:10px;border:1.5px solid #e0e7ef;border-radius:9px;font-size:0.9rem;font-family:inherit;margin-bottom:14px;outline:none">
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-novo-mes')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button onclick="criarNovoMes()" style="background:#1565c0;color:white">Criar</button>
-    </div></div>
+ <div class="modal-box"><h3 style="color:#1565c0">Novo mês</h3>
+ <p>Nome do novo mês:</p>
+ <input type="text" id="input-novo-mes" placeholder="Ex: Junho 2026" style="width:100%;padding:10px;border:1.5px solid #e0e7ef;border-radius:9px;font-size:0.9rem;font-family:inherit;margin-bottom:14px;outline:none">
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-novo-mes')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button onclick="criarNovoMes()" style="background:#1565c0;color:white">Criar</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-usuarios">
-    <div class="modal-box" style="max-width:500px"><h3 style="color:#6a1b9a">👤 Gerenciar Usuários</h3>
-    <p id="modal-usuarios-info" style="margin-bottom:10px"></p>
-    <div id="modal-usuarios-lista" style="max-height:380px;overflow-y:auto;margin-bottom:14px"></div>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-usuarios')" style="background:#eceff1;color:#546e7a">Fechar</button>
-        <button onclick="sairDaSessao()" style="background:#c62828;color:white">🚪 Sair</button>
-    </div></div>
-</div>
-
-<div class="modal-overlay" id="modal-importar-escala">
-    <div class="modal-box" style="max-width:560px"><h3 style="color:#1565c0">📥 Importar escala mensal (conforme a foto)</h3>
-    <p style="font-size:0.8rem;color:#546e7a">Uma linha por profissional, no formato <b>Nome: código1,código2,...,código31</b> (um código por dia do mês selecionado). Códigos aceitos: <b>07-11</b> (horário), <b>FE</b> (folga), <b>DSR</b>, <b>FF</b> (férias), ou qualquer texto livre para outras marcações (ex: BH-). Deixe vazio para pular um dia.</p>
-    <textarea id="imp-texto" rows="10" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:monospace;font-size:0.78rem;margin-top:8px" placeholder="Suzana: 15-19,DSR,07-11,07-11,...&#10;Mauricio: 11-15,DSR,FE,FE,..."></textarea>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-importar-escala')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button onclick="importarEscalaTexto()" style="background:#1565c0;color:white">Importar</button>
-    </div></div>
+ <div class="modal-box" style="max-width:500px"><h3 style="color:#6a1b9a">Gerenciar Usuários</h3>
+ <p id="modal-usuarios-info" style="margin-bottom:10px"></p>
+ <div id="modal-usuarios-lista" style="max-height:380px;overflow-y:auto;margin-bottom:14px"></div>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-usuarios')" style="background:#eceff1;color:#546e7a">Fechar</button>
+ <button onclick="sairDaSessao()" style="background:#c62828;color:white">Sair</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-feriado-manual">
-    <div class="modal-box"><h3 style="color:#c62828">📅 Adicionar feriado manual</h3>
-    <div class="form-group" style="margin-bottom:10px"><label>Data</label><input type="date" id="fm-data" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit"></div>
-    <div class="form-group"><label>Nome do feriado</label><input type="text" id="fm-nome" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit" placeholder="Ex: Aniversário do município"></div>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-feriado-manual')" style="background:#eceff1;color:#546e7a">Concluir</button>
-        <button onclick="confirmarFeriadoManual()" style="background:#c62828;color:white">+ Adicionar e continuar</button>
-    </div></div>
+ <div class="modal-box"><h3 style="color:#c62828">Adicionar feriado manual</h3>
+ <div class="form-group" style="margin-bottom:10px"><label>Data</label><input type="date" id="fm-data" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit"></div>
+ <div class="form-group"><label>Nome do feriado</label><input type="text" id="fm-nome" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit" placeholder="Ex: Aniversário do município"></div>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-feriado-manual')" style="background:#eceff1;color:#546e7a">Concluir</button>
+ <button onclick="confirmarFeriadoManual()" style="background:#c62828;color:white">+ Adicionar e continuar</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-editar-dia">
-    <div class="modal-box"><h3 style="color:#1565c0" id="ed-titulo">Editar dia</h3>
-    <div class="form-group" style="margin-bottom:10px"><label>Tipo</label>
-        <select id="ed-tipo" onchange="onChangeEdTipo()" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit">
-            <option value="horario">Horário</option>
-            <option value="folga">Folga (FE)</option>
-            <option value="dsr">DSR</option>
-            <option value="ferias">Férias</option>
-        </select>
-    </div>
-    <div class="grid-inputs" id="ed-horario-wrap">
-        <div class="form-group"><label>Início</label><input type="time" id="ed-inicio"></div>
-        <div class="form-group"><label>Fim</label><input type="time" id="ed-fim"></div>
-    </div>
-    <p id="ed-bloqueado-aviso" style="display:none;color:#c62828;font-size:0.8rem;margin-top:8px">🔒 Este dia está bloqueado por sobreaviso e não pode ter horário de escala mensal.</p>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-editar-dia')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button onclick="excluirLancamentoDia()" style="background:#c62828;color:white">🗑 Limpar</button>
-        <button onclick="salvarEdicaoDia()" style="background:#2e7d32;color:white">Salvar</button>
-    </div></div>
+ <div class="modal-box"><h3 style="color:#1565c0" id="ed-titulo">Editar dia</h3>
+ <div class="form-group" style="margin-bottom:10px"><label>Tipo</label>
+ <select id="ed-tipo" onchange="onChangeEdTipo()" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit">
+ <option value="horario">Horário</option>
+ <option value="folga">Folga (FE)</option>
+ <option value="dsr">DSR</option>
+ <option value="ferias">Férias</option>
+ </select>
+ </div>
+ <div class="grid-inputs" id="ed-horario-wrap">
+ <div class="form-group"><label>Início</label><input type="time" id="ed-inicio"></div>
+ <div class="form-group"><label>Fim</label><input type="time" id="ed-fim"></div>
+ </div>
+ <p id="ed-bloqueado-aviso" style="display:none;color:#c62828;font-size:0.8rem;margin-top:8px">Este dia está bloqueado por sobreaviso e não pode ter horário de escala mensal.</p>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-editar-dia')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button onclick="excluirLancamentoDia()" style="background:#c62828;color:white">Limpar</button>
+ <button onclick="salvarEdicaoDia()" style="background:#2e7d32;color:white">Salvar</button>
+ </div></div>
 </div>
 
 <div class="modal-overlay" id="modal-config-drive">
-    <div class="modal-box" style="max-width:400px"><h3 style="color:#1565c0">☁️ Configurar Google Drive</h3>
-    <p>Salve seu e-mail do Google para conectar mais rápido:</p>
-    <div class="mf"><label>E-mail Google</label><input type="email" id="drive-email-salvo" placeholder="seu@gmail.com"></div>
-    <div class="modal-actions">
-        <button onclick="fecharModal('modal-config-drive')" style="background:#eceff1;color:#546e7a">Cancelar</button>
-        <button onclick="salvarEmailDrive()" style="background:#1565c0;color:white">💾 Salvar e Conectar</button>
-    </div></div>
+ <div class="modal-box" style="max-width:400px"><h3 style="color:#1565c0">☁ Configurar Google Drive</h3>
+ <p>Salve seu e-mail do Google para conectar mais rápido:</p>
+ <div class="mf"><label>E-mail Google</label><input type="email" id="drive-email-salvo" placeholder="seu@gmail.com"></div>
+ <div class="modal-actions">
+ <button onclick="fecharModal('modal-config-drive')" style="background:#eceff1;color:#546e7a">Cancelar</button>
+ <button onclick="salvarEmailDrive()" style="background:#1565c0;color:white">Salvar e Conectar</button>
+ </div></div>
 </div>
 
 <script>
@@ -684,11 +610,12 @@ function fazerCadastro() {
 function iniciarComUsuario() {
     if (usuarioLogado) {
         const b = document.getElementById('user-badge');
-        b.textContent = (usuarioLogado.role === 'admin' ? '\u{1F6E1} ' : '\u{1F464} ') + usuarioLogado.nome.split(' ')[0];
+        b.textContent = (usuarioLogado.role === 'admin' ? 'Admin: ' : '') + usuarioLogado.nome.split(' ')[0];
         b.style.display = 'inline-flex';
         if (!allData.user && usuarioLogado.nome) allData.user = usuarioLogado.nome;
     }
-    carregar();
+    if (!allData.meses) allData.meses = {};
+    salvarLS();
 }
 function sairDaSessao() {
     sessionStorage.removeItem('sbSessao');
@@ -1367,15 +1294,10 @@ function carregarDoDrive() {
     fetch('https://www.googleapis.com/drive/v3/files/'+gFileId+'?alt=media', { headers:{ Authorization:'Bearer '+gToken } })
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(dd) {
-        var tL = Object.values(allData.meses).reduce(function(s,m){ return s+m.exames.length+m.corridas.length; },0);
-        var tD = Object.values(dd.meses||{}).reduce(function(s,m){ return s+m.exames.length+m.corridas.length; },0);
-        if (tD > tL && confirm('Drive tem '+tD+' registros, local tem '+tL+'. Carregar dados do Drive?')) {
+        var tL = ((allData.sdi && allData.sdi.profissionais) || []).length;
+        var tD = ((dd.sdi && dd.sdi.profissionais) || []).length;
+        if (tD >= tL && confirm('Drive tem dados de ' + tD + ' profissional(is), local tem ' + tL + '. Carregar dados do Drive?')) {
             allData = dd; if (!allData.usuarios) allData.usuarios = []; salvarLS();
-            popularSelectMes();
-            var ids = Object.keys(allData.meses); mesAtual = ids[ids.length-1];
-            document.getElementById('sel-mes').value = mesAtual;
-            document.getElementById('userName').value = allData.user||'';
-            document.getElementById('lista-escalas').innerHTML = ''; carregarMes();
             iniciarSdiUi();
             setStatus('ok','Drive carregado'); return;
         }
@@ -1452,11 +1374,6 @@ function _forcarCarregarDoDrive() {
     .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
     .then(function(dd) {
         allData = dd; if (!allData.usuarios) allData.usuarios = []; salvarLS();
-        popularSelectMes();
-        var ids = Object.keys(allData.meses); mesAtual = ids[ids.length-1];
-        document.getElementById('sel-mes').value = mesAtual;
-        document.getElementById('userName').value = allData.user||'';
-        document.getElementById('lista-escalas').innerHTML = ''; carregarMes();
         iniciarSdiUi();
         setStatus('ok','Restaurado');
     })
@@ -1495,6 +1412,7 @@ function sdiInit() {
     if (!allData.sdi.escalasMensais) allData.sdi.escalasMensais = {};
     if (!allData.sdi.feriados) allData.sdi.feriados = {};
     if (!allData.sdi.rotacaoFDS) allData.sdi.rotacaoFDS = {};
+    if (!allData.sdi.trocas) allData.sdi.trocas = {};
 }
 
 var sdiAno = new Date().getFullYear();
@@ -1520,6 +1438,7 @@ document.addEventListener('DOMContentLoaded', function(){
 function limparCamposProfissional() {
     document.getElementById('pf-id').value = '';
     document.getElementById('pf-nome').value = '';
+    document.getElementById('pf-telefone').value = '';
     document.getElementById('pf-rx').checked = false;
     document.getElementById('pf-tc').checked = false;
     document.getElementById('pf-rm').checked = false;
@@ -1533,6 +1452,7 @@ function limparCamposProfissional() {
 function salvarProfissional() {
     var nome = document.getElementById('pf-nome').value.trim();
     if (!nome) { alert('Informe o nome do profissional.'); return; }
+    var telefone = document.getElementById('pf-telefone').value.trim();
     var rx = document.getElementById('pf-rx').checked;
     var tc = document.getElementById('pf-tc').checked;
     var rm = document.getElementById('pf-rm').checked;
@@ -1542,9 +1462,9 @@ function salvarProfissional() {
     var id = document.getElementById('pf-id').value;
     if (id) {
         var p = allData.sdi.profissionais.find(function(x){ return x.id === id; });
-        if (p) { p.nome = nome; p.rx = rx; p.tc = tc; p.rm = rm; p.sobreaviso = sob; p.subId = subId; }
+        if (p) { p.nome = nome; p.telefone = telefone; p.rx = rx; p.tc = tc; p.rm = rm; p.sobreaviso = sob; p.subId = subId; }
     } else {
-        allData.sdi.profissionais.push({ id: 'prof_' + Date.now(), nome: nome, rx: rx, tc: tc, rm: rm, sobreaviso: sob, subId: subId });
+        allData.sdi.profissionais.push({ id: 'prof_' + Date.now(), nome: nome, telefone: telefone, rx: rx, tc: tc, rm: rm, sobreaviso: sob, subId: subId });
     }
     salvarLS(); limparCamposProfissional(); renderProfissionais();
 }
@@ -1554,6 +1474,7 @@ function editarProfissional(id) {
     if (!p) return;
     document.getElementById('pf-id').value = p.id;
     document.getElementById('pf-nome').value = p.nome;
+    document.getElementById('pf-telefone').value = p.telefone || '';
     document.getElementById('pf-rx').checked = !!p.rx;
     document.getElementById('pf-tc').checked = !!p.tc;
     document.getElementById('pf-rm').checked = !!p.rm;
@@ -1584,10 +1505,13 @@ function renderProfissionais() {
         if (p.sobreaviso) tags += '<span class="ptag ptag-sob">Sobreaviso' + (p.subId ? ' · ' + p.subId : '') + '</span>';
         return '<div class="prof-list-card">' +
             '<div class="prof-list-top">' +
-                '<div><div class="prof-list-nome">' + p.nome + '</div><div class="prof-tags">' + tags + '</div></div>' +
+                '<div><div class="prof-list-nome">' + p.nome + '</div>' +
+                    (p.telefone ? '<div class="prof-list-sub">' + p.telefone + '</div>' : '') +
+                    '<div class="prof-tags">' + tags + '</div></div>' +
                 '<div style="display:flex;gap:6px">' +
-                    '<button class="btn-mini" style="background:#1565c0" onclick="editarProfissional(\'' + p.id + '\')">✏️</button>' +
-                    '<button class="btn-mini" style="background:#c62828" onclick="excluirProfissional(\'' + p.id + '\')">🗑</button>' +
+                    '<button class="btn-mini" style="background:#2e7d32" onclick="gerarPdfIndividual(\'' + p.id + '\')">PDF</button>' +
+                    '<button class="btn-mini" style="background:#1565c0" onclick="editarProfissional(\'' + p.id + '\')">Editar</button>' +
+                    '<button class="btn-mini" style="background:#c62828" onclick="excluirProfissional(\'' + p.id + '\')">Excluir</button>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -1742,6 +1666,7 @@ function renderTudoSdi() {
     popularSelectLiProf(); popularSelectLiDia();
     renderEscalaSobreaviso(); renderEscalaMensal(); renderTabelaSobreavisoCalendario();
     document.getElementById('rest-alert-box').classList.remove('show');
+    if (document.getElementById('hist-sel-mes')) popularHistoricoSelects();
 }
 
 /* ── LANÇAMENTO INDIVIDUAL ── */
@@ -1778,6 +1703,7 @@ function lancarIndividual() {
         if (!ini || !fim) { alert('Informe início e fim do horário.'); return; }
         entrada.inicio = ini; entrada.fim = fim;
     }
+    if (existente) registrarTroca(mesId, profId, dataStr, existente, entrada);
     allData.sdi.escalasMensais[mesId][profId][dataStr] = entrada;
     salvarLS(); renderEscalaMensal();
 }
@@ -1888,7 +1814,10 @@ function renderEscalaMensal() {
         return;
     }
     var tbody = profs.map(function(p) {
-        var row = '<tr><td class="prof-col">'+p.nome+'</td>';
+        var row = '<tr>' +
+            '<td class="prof-col" draggable="true" data-prof-id="' + p.id + '"' +
+            ' ondragstart="sdiDragStart(event)" ondragover="sdiDragOver(event)"' +
+            ' ondrop="sdiDrop(event)" ondragend="sdiDragEnd(event)">' + p.nome + '</td>';
         for (var d2=1; d2<=diasNoMes; d2++) {
             var dataStr2 = sdiDataStr(sdiAno, sdiMesNum, d2);
             var e = (mm[p.id]||{})[dataStr2];
@@ -1909,6 +1838,52 @@ function renderEscalaMensal() {
 }
 
 var _edProfId = null, _edDataStr = null;
+
+var _dragProfId = null;
+function sdiDragStart(ev) {
+    _dragProfId = ev.currentTarget.getAttribute('data-prof-id');
+    ev.currentTarget.classList.add('dragging');
+    ev.dataTransfer.effectAllowed = 'move';
+}
+function sdiDragOver(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.add('drag-over');
+}
+function sdiDragEnd(ev) {
+    var cels = document.querySelectorAll('#tbl-escala-mensal td.prof-col');
+    for (var i=0; i<cels.length; i++) { cels[i].classList.remove('drag-over'); cels[i].classList.remove('dragging'); }
+}
+function sdiDrop(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.remove('drag-over');
+    var destinoId = ev.currentTarget.getAttribute('data-prof-id');
+    if (!_dragProfId || destinoId === _dragProfId) return;
+    var pA = allData.sdi.profissionais.find(function(x){ return x.id===_dragProfId; });
+    var pB = allData.sdi.profissionais.find(function(x){ return x.id===destinoId; });
+    if (!pA || !pB) return;
+    if (confirm('Trocar a escala do mes inteiro entre ' + pA.nome + ' e ' + pB.nome + '? Dias bloqueados por sobreaviso nao sao trocados.')) {
+        trocarEscalaEntreProfissionais(_dragProfId, destinoId);
+    }
+}
+function trocarEscalaEntreProfissionais(profIdA, profIdB) {
+    var mesId = sdiMesId(sdiAno, sdiMesNum);
+    var mm = allData.sdi.escalasMensais[mesId] || {};
+    var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
+    var horaA = mm[profIdA] || {}, horaB = mm[profIdB] || {};
+    var novoA = {}, novoB = {};
+    for (var d=1; d<=diasNoMes; d++) {
+        var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
+        var eA = horaA[dataStr], eB = horaB[dataStr];
+        if (eA && eA.tipo === 'sobreaviso') { novoA[dataStr] = eA; }
+        else if (eB) { novoA[dataStr] = eB; registrarTroca(mesId, profIdA, dataStr, eA, eB); }
+        if (eB && eB.tipo === 'sobreaviso') { novoB[dataStr] = eB; }
+        else if (eA) { novoB[dataStr] = eA; registrarTroca(mesId, profIdB, dataStr, eB, eA); }
+    }
+    if (!allData.sdi.escalasMensais[mesId]) allData.sdi.escalasMensais[mesId] = {};
+    allData.sdi.escalasMensais[mesId][profIdA] = novoA;
+    allData.sdi.escalasMensais[mesId][profIdB] = novoB;
+    salvarLS(); renderEscalaMensal();
+}
 function abrirEdicaoDia(profId, dataStr) {
     _edProfId = profId; _edDataStr = dataStr;
     var mesId = sdiMesId(sdiAno, sdiMesNum);
@@ -1941,6 +1916,7 @@ function salvarEdicaoDia() {
         if (!ini || !fim) { alert('Informe início e fim.'); return; }
         entrada.inicio = ini; entrada.fim = fim;
     }
+    if (e) registrarTroca(mesId, _edProfId, _edDataStr, e, entrada);
     allData.sdi.escalasMensais[mesId][_edProfId][_edDataStr] = entrada;
     salvarLS(); fecharModal('modal-editar-dia'); renderEscalaMensal();
 }
@@ -1948,8 +1924,27 @@ function excluirLancamentoDia() {
     var mesId = sdiMesId(sdiAno, sdiMesNum);
     var e = ((allData.sdi.escalasMensais[mesId]||{})[_edProfId]||{})[_edDataStr];
     if (e && e.tipo === 'sobreaviso') { fecharModal('modal-editar-dia'); return; }
+    if (e) registrarTroca(mesId, _edProfId, _edDataStr, e, null);
     if (allData.sdi.escalasMensais[mesId] && allData.sdi.escalasMensais[mesId][_edProfId]) delete allData.sdi.escalasMensais[mesId][_edProfId][_edDataStr];
     salvarLS(); fecharModal('modal-editar-dia'); renderEscalaMensal();
+}
+
+/* ── REGISTRO DE TROCAS (log de alterações após a escala já lançada) ── */
+function sdiTextoEntrada(e) {
+    if (!e) return '(vazio)';
+    if (e.tipo === 'horario') return e.inicio + '-' + e.fim;
+    if (e.tipo === 'sobreaviso') return 'SOBREAVISO';
+    if (e.tipo === 'folga') return 'FOLGA';
+    if (e.tipo === 'dsr') return 'DSR';
+    if (e.tipo === 'ferias') return 'FÉRIAS';
+    return (e.obs || e.tipo || '').toUpperCase();
+}
+function registrarTroca(mesId, profId, dataStr, entradaAntiga, entradaNova) {
+    var antigoTxt = sdiTextoEntrada(entradaAntiga), novoTxt = sdiTextoEntrada(entradaNova);
+    if (antigoTxt === novoTxt) return;
+    if (!allData.sdi.trocas) allData.sdi.trocas = {};
+    if (!allData.sdi.trocas[mesId]) allData.sdi.trocas[mesId] = [];
+    allData.sdi.trocas[mesId].push({ ts: new Date().toISOString(), profId: profId, data: dataStr, de: antigoTxt, para: novoTxt });
 }
 
 /* ── ALERTA DE DESCANSO MÍNIMO DE 12H ── */
@@ -2011,8 +2006,44 @@ function imprimirEscalaSDI() {
     setTimeout(function(){ document.body.classList.remove('print-mensal'); }, 500);
 }
 
-/* ── IMPORTAÇÃO DE ESCALA MENSAL (texto colado, fiel à foto original) ── */
-function abrirImportarEscala() { document.getElementById('imp-texto').value = ''; abrirModal('modal-importar-escala'); }
+/* ── PDF INDIVIDUAL POR PROFISSIONAL ── */
+function sdiNomesMeses() { return ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro']; }
+function sdiDesenharPaginaProf(doc, p, primeira) {
+    var mesId = sdiMesId(sdiAno, sdiMesNum);
+    var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
+    var mm = (allData.sdi.escalasMensais[mesId] || {})[p.id] || {};
+    if (!primeira) doc.addPage();
+    doc.setFontSize(13); doc.text('Escala Individual — ' + sdiNomesMeses()[sdiMesNum-1] + '/' + sdiAno, 14, 14);
+    doc.setFontSize(11); doc.text(p.nome + (p.telefone ? ' — ' + p.telefone : ''), 14, 21);
+    var body = [];
+    var diasSemana = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+    for (var d=1; d<=diasNoMes; d++) {
+        var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
+        var e = mm[dataStr];
+        body.push([String(d).padStart(2,'0') + '/' + String(sdiMesNum).padStart(2,'0'), diasSemana[sdiDiaSemana(sdiAno, sdiMesNum, d)], sdiTextoEntrada(e)]);
+    }
+    doc.autoTable({ head:[['Dia','Semana','Escala']], body:body, startY:26, styles:{ fontSize:9 }, headStyles:{ fillColor:[21,101,192] } });
+}
+function gerarPdfIndividual(profId) {
+    try {
+        var p = allData.sdi.profissionais.find(function(x){ return x.id===profId; });
+        if (!p) return;
+        var doc = new window.jspdf.jsPDF();
+        sdiDesenharPaginaProf(doc, p, true);
+        doc.save('escala_' + p.nome.replace(/\s+/g,'_') + '_' + sdiMesId(sdiAno, sdiMesNum) + '.pdf');
+    } catch(ex) { alert('Erro ao gerar PDF individual: ' + ex.message); }
+}
+function gerarPdfTodosIndividuais() {
+    try {
+        var profs = allData.sdi.profissionais.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+        if (profs.length === 0) { alert('Nenhum profissional cadastrado.'); return; }
+        var doc = new window.jspdf.jsPDF();
+        profs.forEach(function(p, i) { sdiDesenharPaginaProf(doc, p, i===0); });
+        doc.save('escalas_individuais_' + sdiMesId(sdiAno, sdiMesNum) + '.pdf');
+    } catch(ex) { alert('Erro ao gerar PDFs individuais: ' + ex.message); }
+}
+
+/* ── UTILITÁRIOS DE CÓDIGO DE HORÁRIO (usados pelo seed de dados) ── */
 function sdiNormalizarHora(h) {
     h = h.trim();
     if (h.indexOf(':') > -1) return h;
@@ -2031,37 +2062,6 @@ function parseCodigoSDI(codRaw) {
     }
     return { tipo:'outro', obs: cod };
 }
-function importarEscalaTexto() {
-    var texto = document.getElementById('imp-texto').value;
-    var linhas = texto.split('\n').map(function(l){ return l.trim(); }).filter(Boolean);
-    if (linhas.length === 0) { alert('Cole ao menos uma linha.'); return; }
-    var mesId = sdiMesId(sdiAno, sdiMesNum);
-    var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
-    if (!allData.sdi.escalasMensais[mesId]) allData.sdi.escalasMensais[mesId] = {};
-    var naoEncontrados = [], importados = 0;
-    linhas.forEach(function(linha) {
-        var sep = linha.indexOf(':');
-        if (sep === -1) return;
-        var nome = linha.slice(0, sep).trim();
-        var codigos = linha.slice(sep+1).split(',').map(function(c){ return c.trim(); });
-        var p = allData.sdi.profissionais.find(function(x){ return x.nome.toLowerCase() === nome.toLowerCase(); });
-        if (!p) { naoEncontrados.push(nome); return; }
-        if (!allData.sdi.escalasMensais[mesId][p.id]) allData.sdi.escalasMensais[mesId][p.id] = {};
-        for (var d = 1; d <= Math.min(diasNoMes, codigos.length); d++) {
-            var entrada = parseCodigoSDI(codigos[d-1]);
-            if (!entrada) continue;
-            var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
-            var existente = allData.sdi.escalasMensais[mesId][p.id][dataStr];
-            if (existente && existente.tipo === 'sobreaviso') continue; /* bloqueio de sobreaviso tem prioridade */
-            allData.sdi.escalasMensais[mesId][p.id][dataStr] = entrada;
-            importados++;
-        }
-    });
-    salvarLS(); fecharModal('modal-importar-escala'); renderEscalaMensal();
-    var msg = importados + ' lançamento(s) importado(s).';
-    if (naoEncontrados.length) msg += '\n\nNão encontrados no cadastro: ' + naoEncontrados.join(', ');
-    alert(msg);
-}
 
 /* ── SEED INICIAL: profissionais e sobreaviso de Agosto/2026 (a partir da foto) ── */
 function seedSdiInicial() {
@@ -2069,9 +2069,9 @@ function seedSdiInicial() {
     var apenasRx = ['Suzana','Mauricio','Cheila','Wanessa','Anderson','Dayana','Kaoany'];
     var rxTc = ['Vanessa G.','Daniela','Roberto','Carolina','Micheli'];
     var rxTcSob = ['Willyam','Jéssica','Raissa'];
-    apenasRx.forEach(function(n){ allData.sdi.profissionais.push({ id:'prof_'+Date.now()+'_'+Math.random().toString(36).slice(2), nome:n, rx:true, tc:false, rm:false, sobreaviso:false, subId:'' }); });
-    rxTc.forEach(function(n){ allData.sdi.profissionais.push({ id:'prof_'+Date.now()+'_'+Math.random().toString(36).slice(2), nome:n, rx:true, tc:true, rm:false, sobreaviso:false, subId:'' }); });
-    rxTcSob.forEach(function(n){ allData.sdi.profissionais.push({ id:'prof_'+Date.now()+'_'+Math.random().toString(36).slice(2), nome:n, rx:true, tc:true, rm:false, sobreaviso:true, subId:'SDI-TC' }); });
+    apenasRx.forEach(function(n){ allData.sdi.profissionais.push({ id:'prof_'+Date.now()+'_'+Math.random().toString(36).slice(2), nome:n, telefone:'', rx:true, tc:false, rm:false, sobreaviso:false, subId:'' }); });
+    rxTc.forEach(function(n){ allData.sdi.profissionais.push({ id:'prof_'+Date.now()+'_'+Math.random().toString(36).slice(2), nome:n, telefone:'', rx:true, tc:true, rm:false, sobreaviso:false, subId:'' }); });
+    rxTcSob.forEach(function(n){ allData.sdi.profissionais.push({ id:'prof_'+Date.now()+'_'+Math.random().toString(36).slice(2), nome:n, telefone:'', rx:true, tc:true, rm:false, sobreaviso:true, subId:'' }); });
 
     var mesId = '2026-08';
     var willyam = allData.sdi.profissionais.find(function(p){ return p.nome==='Willyam'; });
@@ -2088,6 +2088,38 @@ function seedSdiInicial() {
     var nacionais = feriadosNacionais(2026);
     var doMes = {}; Object.keys(nacionais).forEach(function(dt){ if (dt.indexOf(mesId)===0) doMes[dt] = nacionais[dt]; });
     allData.sdi.feriados[mesId] = doMes;
+
+    /* Horários reais transcritos da escala impressa de Agosto/2026 — revise e ajuste o que precisar */
+    var horas = {
+        'Suzana':     '15-19,DSR,07-11,07-11,07-11,07-11,07-11,DSR,15-19,07-11,07-11,07-11,07-11,07-11,11-15,DSR,07-11,07-11,07-11,07-11,07-11,DSR,15-19,07-11,07-11,07-11,07-11,07-11,11-15,DSR,07-11',
+        'Mauricio':   '11-15,DSR,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE',
+        'Cheila':     'FE,FE,FE,08-12,08-12,08-12,08-12,DSR,07-11,08-12,08-12,08-12,08-12,08-12,FF,DSR,08-12,08-12,08-12,08-12,08-12,FF,DSR,08-12,08-12,08-12,08-12,08-12,DSR,11-15,08-12',
+        'Wanessa':    'DSR,15-19,13-17,13-17,13-17,13-17,13-17,07-11,DSR,13-17,13-17,13-17,13-17,13-17,15-19,DSR,13-17,13-17,13-17,13-17,13-17,11-15,DSR,13-17,13-17,13-17,13-17,13-17,DSR,15-19,13-17',
+        'Anderson':   'DSR,11-15,15-19,15-19,15-19,15-19,15-19,15-19,DSR,15-19,15-19,15-19,15-19,15-19,07-11,DSR,15-19,15-19,15-19,15-19,15-19,DSR,11-15,15-19,15-19,15-19,15-19,15-19,07-11,DSR,15-19',
+        'Dayana':     'DSR,07-11,12-16,12-16,12-16,12-16,12-16,11-15,DSR,12-16,12-16,12-16,12-16,12-16,DSR,08-12,12-16,12-16,12-16,12-16,12-16,15-19,DSR,12-16,12-16,12-16,12-16,12-16,DSR,07-11,12-16',
+        'Kaoany':     '07-11,DSR,08-12,08-12,08-12,08-12,08-12,DSR,11-15,08-12,08-12,08-12,08-12,08-12,DSR,14-18,08-12,08-12,08-12,08-12,08-12,07-11,DSR,08-12,08-12,08-12,08-12,08-12,15-19,DSR,08-12',
+        'Vanessa G.': '07-11,DSR,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE,FE',
+        'Daniela':    'FE,FE,FE,03-07,03-07,03-07,03-07,DSR,07-11,03-07,03-07,03-07,03-07,03-07,15-19,DSR,03-07,03-07,03-07,03-07,03-07,07-11,DSR,03-07,03-07,03-07,03-07,03-07,DSR,07-11,03-07',
+        'Willyam':    '15-19,DSR,07-11,07-11,07-11,07-11,07-11,15-19,DSR,07-11,07-11,07-11,07-11,07-11,BH-,DSR,07-11,07-11,07-11,07-11,07-11,15-19,DSR,07-11,07-11,07-11,07-11,07-11,DSR,15-19,07-11',
+        'Jéssica':    '11-15,DSR,03-07,11-15,11-15,11-15,11-15,DSR,15-19,11-15,11-15,11-15,11-15,11-15,07-11,DSR,03-07,03-07,03-07,03-07,03-07,DSR,07-11,03-07,03-07,03-07,03-07,03-07,DSR,DSR,03-07',
+        'Raissa':     'DSR,15-19,15-19,15-19,15-19,15-19,15-19,BH-,DSR,15-19,15-19,15-19,15-19,15-19,DSR,15-19,15-19,15-19,15-19,15-19,15-19,DSR,15-19,15-19,15-19,15-19,15-19,15-19,DSR,DSR,15-19',
+        'Roberto':    'BH-,DSR,19-23,19-23,19-23,19-23,19-23,07-11,DSR,19-23,19-23,19-23,19-23,19-23,DSR,11-15,19-23,19-23,19-23,19-23,19-23,DSR,11-15,19-23,19-23,19-23,19-23,19-23,07-11,15-19,19-23',
+        'Carolina':   'DSR,07-11,11-15,23-03,23-03,23-03,23-03,11-15,DSR,23-03,23-03,23-03,23-03,23-03,DSR,07-11,23-03,23-03,23-03,23-03,23-03,23-03,DSR,23-03,23-03,23-03,23-03,23-03,15-19,DSR,23-03',
+        'Micheli':    'DSR,11-15,23-03,14-18,14-18,14-18,14-18,DSR,11-15,14-18,14-18,14-18,14-18,14-18,11-15,DSR,14-18,14-18,14-18,14-18,14-18,14-18,07-11,14-18,14-18,14-18,14-18,14-18,11-15,11-15,14-18'
+    };
+    var diasNoMes = 31;
+    if (!allData.sdi.escalasMensais[mesId]) allData.sdi.escalasMensais[mesId] = {};
+    allData.sdi.profissionais.forEach(function(p) {
+        var linha = horas[p.nome]; if (!linha) return;
+        var codigos = linha.split(',');
+        if (!allData.sdi.escalasMensais[mesId][p.id]) allData.sdi.escalasMensais[mesId][p.id] = {};
+        for (var d = 1; d <= diasNoMes; d++) {
+            var entrada = parseCodigoSDI(codigos[d-1]);
+            if (!entrada) continue;
+            allData.sdi.escalasMensais[mesId][p.id][sdiDataStr(2026, 8, d)] = entrada;
+        }
+    });
+
     aplicarBloqueiosSobreaviso();
     salvarLS();
 }
@@ -2162,7 +2194,65 @@ function imprimirEscalaSobreavisoSDI() {
     setTimeout(function(){ document.body.classList.remove('print-sobreaviso'); }, 500);
 }
 
-/* ── HOOK: inicialização do módulo SDI quando o app inicia ── */
+/* ── HISTÓRICO: por mês e por profissional ── */
+function sdiParseMesId(mesId) { var pp = mesId.split('-'); return { ano: parseInt(pp[0],10), mes: parseInt(pp[1],10) }; }
+function popularHistoricoSelects() {
+    var selMes = document.getElementById('hist-sel-mes'), selProf = document.getElementById('hist-sel-prof');
+    if (!selMes) return;
+    var meses = {};
+    Object.keys(allData.sdi.escalasMensais).forEach(function(m){ meses[m] = true; });
+    Object.keys(allData.sdi.escalasSobreaviso).forEach(function(m){ meses[m] = true; });
+    var lista = Object.keys(meses).sort().reverse();
+    selMes.innerHTML = lista.map(function(m) {
+        var pm = sdiParseMesId(m);
+        return '<option value="' + m + '">' + sdiNomesMeses()[pm.mes-1] + '/' + pm.ano + '</option>';
+    }).join('') || '<option value="">Nenhum mês lançado</option>';
+    selProf.innerHTML = '<option value="">Todos os profissionais</option>' +
+        allData.sdi.profissionais.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); })
+        .map(function(p){ return '<option value="' + p.id + '">' + p.nome + '</option>'; }).join('');
+}
+function renderHistorico() {
+    var mesId = document.getElementById('hist-sel-mes').value;
+    var profFiltro = document.getElementById('hist-sel-prof').value;
+    var tbl = document.getElementById('tbl-historico-grade');
+    var listaTrocas = document.getElementById('hist-trocas-lista');
+    if (!mesId) { tbl.querySelector('thead').innerHTML=''; tbl.querySelector('tbody').innerHTML=''; listaTrocas.innerHTML='<p style="color:#90a4ae;font-size:0.85rem">Nenhum mês disponível.</p>'; return; }
+    var pm = sdiParseMesId(mesId);
+    var diasNoMes = sdiDiasNoMes(pm.ano, pm.mes);
+    var mm = allData.sdi.escalasMensais[mesId] || {};
+    var profs = allData.sdi.profissionais.slice().filter(function(p){ return !profFiltro || p.id===profFiltro; })
+        .sort(function(a,b){ return a.nome.localeCompare(b.nome); });
+
+    var thead = '<tr><th class="prof-col">Profissional</th>';
+    for (var d=1; d<=diasNoMes; d++) thead += '<th>' + String(d).padStart(2,'0') + '</th>';
+    thead += '</tr>';
+    tbl.querySelector('thead').innerHTML = thead;
+
+    if (profs.length === 0) { tbl.querySelector('tbody').innerHTML = '<tr><td style="padding:10px;color:#90a4ae">Nenhum profissional.</td></tr>'; }
+    else {
+        tbl.querySelector('tbody').innerHTML = profs.map(function(p) {
+            var row = '<tr><td class="prof-col">' + p.nome + '</td>';
+            for (var d2=1; d2<=diasNoMes; d2++) {
+                var e = (mm[p.id]||{})[sdiDataStr(pm.ano, pm.mes, d2)];
+                row += '<td class="dia-cel">' + (e ? sdiTextoEntrada(e) : '') + '</td>';
+            }
+            return row + '</tr>';
+        }).join('');
+    }
+
+    var trocas = (allData.sdi.trocas[mesId] || []).filter(function(t){ return !profFiltro || t.profId===profFiltro; })
+        .slice().sort(function(a,b){ return b.ts.localeCompare(a.ts); });
+    if (trocas.length === 0) { listaTrocas.innerHTML = '<p style="color:#90a4ae;font-size:0.85rem">Nenhuma troca registrada neste mês.</p>'; return; }
+    listaTrocas.innerHTML = trocas.map(function(t) {
+        var p = allData.sdi.profissionais.find(function(x){ return x.id===t.profId; });
+        var dt = new Date(t.ts);
+        var dtTxt = String(dt.getDate()).padStart(2,'0') + '/' + String(dt.getMonth()+1).padStart(2,'0') + ' ' + String(dt.getHours()).padStart(2,'0') + ':' + String(dt.getMinutes()).padStart(2,'0');
+        return '<div class="sob-row"><label style="width:auto;flex:0 0 90px">' + dtTxt + '</label>' +
+            '<span style="flex:1">' + (p?p.nome:'—') + ' — dia ' + t.data.slice(8,10) + ': <b>' + t.de + '</b> &rarr; <b>' + t.para + '</b></span></div>';
+    }).join('');
+}
+
+
 function iniciarSdiUi() {
     sdiInit();
     seedSdiInicial();
@@ -2170,6 +2260,8 @@ function iniciarSdiUi() {
     renderProfissionais();
     renderTudoSdi();
     renderTabelaSobreavisoCalendario();
+    popularHistoricoSelects();
+    renderHistorico();
 }
 
 iniciarApp();
