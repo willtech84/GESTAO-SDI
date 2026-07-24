@@ -177,9 +177,10 @@
 
         /* ── SDI: Escala Mensal ── */
         .sdi-toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
-        .sdi-subnav { display: flex; gap: 6px; background: #eef2f6; border-radius: 12px; padding: 5px; margin-bottom: 14px; }
-        .sdi-subnav-btn { flex: 1; background: transparent; border: none; padding: 10px 6px; border-radius: 9px; font-size: 0.78rem; font-weight: 700; color: #607d8b; cursor: pointer; font-family: inherit; }
-        .sdi-subnav-btn.active { background: #1565c0; color: white; box-shadow: 0 2px 6px rgba(21,101,192,0.35); }
+        .sdi-subnav { display: flex; gap: 6px; background: #eef2f6; border-radius: 12px; padding: 5px; margin-bottom: 14px; border: 1px solid #e0e7ef; }
+        .sdi-subnav-btn { flex: 1; background: transparent; border: none; padding: 12px 8px; border-radius: 9px; font-size: 0.85rem; font-weight: 800; letter-spacing: .3px; text-transform: uppercase; color: #607d8b; cursor: pointer; font-family: inherit; transition: background .15s, color .15s; }
+        .sdi-subnav-btn:hover { background: #e3e9ef; }
+        .sdi-subnav-btn.active { background: #1565c0; color: white; box-shadow: 0 3px 10px rgba(21,101,192,0.4); }
         .sdi-toolbar select { padding: 8px 10px; border: 1.5px solid #e0e7ef; border-radius: 8px; font-size: 0.85rem; font-family: inherit; }
         .btn-sdi { background: #1565c0; color: white; border: none; padding: 8px 13px; border-radius: 8px; cursor: pointer; font-size: 0.78rem; font-weight: 600; font-family: inherit; }
         .btn-sdi.g { background: #2e7d32; } .btn-sdi.o { background: #e65100; } .btn-sdi.p { background: #6a1b9a; } .btn-sdi.gy { background: #546e7a; }
@@ -201,6 +202,13 @@
         .rest-alert-box { background: #ffebee; border: 1.5px solid #ef9a9a; border-radius: 10px; padding: 10px 12px; margin-bottom: 12px; font-size: 0.8rem; color: #c62828; display: none; }
         .rest-alert-box.show { display: block; }
         .rest-alert-box ul { margin: 6px 0 0 18px; }
+        .sdi-legenda { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 10px 4px 2px; font-size: 0.72rem; color: #546e7a; border-top: 1px solid #eceff1; margin-top: 8px; }
+        .sdi-legenda b { color: #263238; }
+        #sdi-toast-wrap { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
+        .sdi-toast { background: #263238; color: #fff; padding: 11px 20px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; white-space: nowrap; }
+        .sdi-toast.show { opacity: 1; transform: translateY(0); }
+        .sdi-toast.ok { background: #2e7d32; }
+        .sdi-toast.err { background: #c62828; }
         .sob-row { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid #f0f4f8; font-size: 0.82rem; }
         .sob-row label { width: 130px; flex-shrink: 0; color: #546e7a; font-weight: 600; }
         .sob-row select { flex: 1; padding: 7px 9px; border: 1.5px solid #e0e7ef; border-radius: 7px; font-family: inherit; font-size: 0.82rem; }
@@ -208,6 +216,12 @@
             body * { visibility: hidden; }
             body.print-mensal #print-area, body.print-mensal #print-area * { visibility: visible; }
             body.print-mensal #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+            body.print-mensal #tela-grade-wrap { display: none !important; }
+            body.print-mensal #print-grade-wrap { display: block !important; }
+            body.print-mensal table.grid-mensal-print { font-size: 8pt; white-space: nowrap; }
+            body.print-mensal table.grid-mensal-print th, body.print-mensal table.grid-mensal-print td { padding: 3px 5px; }
+            body.print-mensal table.grid-mensal-print td.prof-col, body.print-mensal table.grid-mensal-print th.prof-col { position: static; }
+            @page { size: landscape; margin: 10mm; }
             body.print-sobreaviso #print-area-sobreaviso, body.print-sobreaviso #print-area-sobreaviso * { visibility: visible; }
             body.print-sobreaviso #print-area-sobreaviso { position: absolute; left: 0; top: 0; width: 100%; }
         }
@@ -294,6 +308,26 @@
  <button id="btn-save-pf" class="btn-save" onclick="salvarProfissional()">Salvar Profissional</button>
  <button id="btn-cancel-pf" class="btn-cancel-form" onclick="limparCamposProfissional()">Cancelar</button>
  </div>
+
+ <div class="sdi-section-title">Enviar Escalas</div>
+ <div class="form-card">
+ <div class="grid-inputs">
+ <div class="form-group"><label>Escala</label>
+ <select id="env-escala">
+ <option value="mensal">Escala Mensal</option>
+ <option value="sobreaviso">Escala de Sobreaviso</option>
+ <option value="ambas">Ambas</option>
+ </select>
+ </div>
+ <div class="form-group"><label>Destinatário</label>
+ <select id="env-destino">
+ <option value="">Todos os profissionais</option>
+ </select>
+ </div>
+ </div>
+ <button class="btn-save" onclick="enviarEscalasSdi()">Gerar PDF</button>
+ </div>
+
  <div id="lista-profissionais"></div>
  </div>
 
@@ -350,9 +384,12 @@
  <div class="form-group"><label>Tipo</label>
  <select id="li-tipo" onchange="onChangeLiTipo()">
  <option value="horario">Horário</option>
- <option value="folga">Folga (FE)</option>
  <option value="dsr">DSR</option>
- <option value="ferias">Férias</option>
+ <option value="ferias">Férias (FE)</option>
+ <option value="bh_menos">Folga banco de horas (BH-)</option>
+ <option value="bh_mais">Ajuste de banco de horas (BH+)</option>
+ <option value="folga_feriado">Folga feriado (FF)</option>
+ <option value="atestado">Atestado (Atest.)</option>
  </select>
  </div>
  <div class="form-group" id="li-inicio-wrap"><label>Início</label><input type="time" id="li-inicio"></div>
@@ -373,7 +410,7 @@
  <div class="sdi-toolbar">
  <button class="btn-sdi g" onclick="gerarEscalaAutomatica()">Gerar Automática (Feriados)</button>
  <button class="btn-sdi o" onclick="verificarDescansos()">Verificar Descanso 12h</button>
- <button class="btn-sdi p" onclick="gerarRelatorioSDI()">Relatório da Grade</button>
+ <button class="btn-sdi p" onclick="gerarRelatorioSDI()">Visualizar Escala</button>
  <button class="btn-sdi gy" onclick="imprimirEscalaSDI()">Imprimir Grade</button>
  <button class="btn-sdi gy" onclick="gerarPdfTodosIndividuais()">PDF Individual — Todos</button>
  </div>
@@ -381,12 +418,19 @@
  <div class="sdi-section-title">Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
  <div id="print-area">
  <div id="sdi-obs-topo-mensal" style="text-align:center;font-weight:600;color:#1565c0;font-size:0.85rem;padding-bottom:8px"></div>
- <div class="grid-mensal-wrap">
+ <div class="grid-mensal-wrap" id="tela-grade-wrap">
  <table class="grid-mensal" id="tbl-escala-mensal">
  <thead></thead>
  <tbody></tbody>
  </table>
  </div>
+ <div class="grid-mensal-wrap" id="print-grade-wrap" style="display:none">
+ <table class="grid-mensal grid-mensal-print" id="tbl-escala-mensal-print">
+ <thead></thead>
+ <tbody></tbody>
+ </table>
+ </div>
+ <div id="sdi-legenda" class="sdi-legenda"></div>
  </div>
  </div>
  </div>
@@ -506,9 +550,12 @@
  <div class="form-group" style="margin-bottom:10px"><label>Tipo</label>
  <select id="ed-tipo" onchange="onChangeEdTipo()" style="width:100%;padding:9px;border:1.5px solid #e0e7ef;border-radius:8px;font-family:inherit">
  <option value="horario">Horário</option>
- <option value="folga">Folga (FE)</option>
  <option value="dsr">DSR</option>
- <option value="ferias">Férias</option>
+ <option value="ferias">Férias (FE)</option>
+ <option value="bh_menos">Folga banco de horas (BH-)</option>
+ <option value="bh_mais">Ajuste de banco de horas (BH+)</option>
+ <option value="folga_feriado">Folga feriado (FF)</option>
+ <option value="atestado">Atestado (Atest.)</option>
  </select>
  </div>
  <div class="grid-inputs" id="ed-horario-wrap">
@@ -1417,6 +1464,21 @@ function restaurarBackup(input) {
    SDI — GERENCIAMENTO: Profissionais, Escala Mensal, Sobreaviso
    ══════════════════════════════════════════════════════════════ */
 
+/* ── NOTIFICAÇÃO TOAST (confirmação visual de ações executadas) ── */
+function sdiToast(msg, tipo) {
+    var wrap = document.getElementById('sdi-toast-wrap');
+    if (!wrap) { return; }
+    var el = document.createElement('div');
+    el.className = 'sdi-toast' + (tipo ? ' ' + tipo : '');
+    el.textContent = msg;
+    wrap.appendChild(el);
+    requestAnimationFrame(function(){ el.classList.add('show'); });
+    setTimeout(function() {
+        el.classList.remove('show');
+        setTimeout(function(){ el.remove(); }, 300);
+    }, 2600);
+}
+
 function sdiInit() {
     if (!allData.sdi) allData.sdi = { profissionais: [], escalasSobreaviso: {}, escalasMensais: {}, feriados: {}, rotacaoFDS: {} };
     if (!allData.sdi.profissionais) allData.sdi.profissionais = [];
@@ -1480,6 +1542,7 @@ function salvarProfissional() {
         allData.sdi.profissionais.push({ id: 'prof_' + Date.now(), nome: nome, telefone: telefone, rx: rx, tc: tc, rm: rm, sobreaviso: sob, subId: subId });
     }
     salvarLS(); limparCamposProfissional(); renderProfissionais();
+    sdiToast('Profissional salvo com sucesso.', 'ok');
 }
 
 function editarProfissional(id) {
@@ -1508,6 +1571,12 @@ function excluirProfissional(id) {
 
 function renderProfissionais() {
     var el = document.getElementById('lista-profissionais');
+    var selEnv = document.getElementById('env-destino');
+    if (selEnv) {
+        selEnv.innerHTML = '<option value="">Todos os profissionais</option>' +
+            allData.sdi.profissionais.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); })
+            .map(function(p){ return '<option value="' + p.id + '">' + p.nome + '</option>'; }).join('');
+    }
     if (!el) return;
     if (allData.sdi.profissionais.length === 0) { el.innerHTML = '<p style="color:#90a4ae;font-size:0.85rem;text-align:center;padding:14px">Nenhum profissional cadastrado.</p>'; return; }
     el.innerHTML = allData.sdi.profissionais.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); }).map(function(p) {
@@ -1642,6 +1711,7 @@ function autoPreencherSobreaviso() {
     });
     aplicarBloqueiosSobreaviso();
     salvarLS(); renderEscalaSobreaviso(); renderEscalaMensal(); renderTabelaSobreavisoCalendario();
+    sdiToast('Sobreaviso preenchido automaticamente.', 'ok');
 }
 function aplicarBloqueiosSobreaviso() {
     var mesId = sdiMesId(sdiAno, sdiMesNum);
@@ -1700,6 +1770,7 @@ function salvarObservacaoSdi() {
         sobreaviso: document.getElementById('sdi-obs-sobreaviso').checked
     };
     salvarLS(); renderObservacoesSdi();
+    sdiToast('Observação salva.', 'ok');
 }
 function renderObservacoesSdi() {
     var mesId = sdiMesId(sdiAno, sdiMesNum);
@@ -1747,6 +1818,7 @@ function lancarIndividual() {
     if (existente) registrarTroca(mesId, profId, dataStr, existente, entrada);
     allData.sdi.escalasMensais[mesId][profId][dataStr] = entrada;
     salvarLS(); renderEscalaMensal();
+    sdiToast('Lançamento salvo.', 'ok');
 }
 
 /* ── LANÇAMENTO AUTOMÁTICO (RX) — repete padrão do mês anterior e alterna fim de semana ── */
@@ -1824,7 +1896,7 @@ function lancarAutomaticoDemais() {
         }
     });
     salvarLS(); renderEscalaMensal();
-    alert('Lançamento automático concluído para os profissionais RX. Revise e ajuste manualmente se necessário.');
+    sdiToast('Lançamento automático concluído. Revise e ajuste se necessário.', 'ok');
 }
 
 /* ── GRADE / RENDER DA ESCALA MENSAL ── */
@@ -1865,10 +1937,8 @@ function renderEscalaMensal() {
             var cls2 = 'dia-cel', txt = '';
             if (e) {
                 if (e.tipo === 'sobreaviso') { cls2 += ' bloqueado'; txt = 'SOBR'; }
-                else if (e.tipo === 'folga') { cls2 += ' folga-cel'; txt = 'FE'; }
-                else if (e.tipo === 'dsr') { cls2 += ' folga-cel'; txt = 'DSR'; }
-                else if (e.tipo === 'ferias') { cls2 += ' folga-cel'; txt = 'FÉRIAS'; }
                 else if (e.tipo === 'horario') { txt = e.inicio+'-'+e.fim; }
+                else { cls2 += ' folga-cel'; txt = sdiTextoEntrada(e); }
             }
             if (feriados[dataStr2] && e && e.tipo!=='sobreaviso') cls2 += ' feriado-cel';
             row += '<td class="'+cls2+'" onclick="abrirEdicaoDia(\''+p.id+'\',\''+dataStr2+'\')">'+txt+'</td>';
@@ -1876,7 +1946,30 @@ function renderEscalaMensal() {
         return row + '</tr>';
     }).join('');
     tbl.querySelector('tbody').innerHTML = tbody;
+    renderGradeImpressao(profs, diasNoMes, feriados, mm);
+    var legEl = document.getElementById('sdi-legenda');
+    if (legEl) legEl.innerHTML = SDI_LEGENDA.map(function(l){ return '<span><b>' + l.cod + '</b> = ' + l.label + '</span>'; }).join('');
     renderObservacoesSdi();
+}
+
+function renderGradeImpressao(profs, diasNoMes, feriados, mm) {
+    var tblP = document.getElementById('tbl-escala-mensal-print'); if (!tblP) return;
+    var diasSemanaAbrev = ['D','S','T','Q','Q','S','S'];
+    var theadP = '<tr><th>Dia</th><th>Sem</th>' + profs.map(function(p){ return '<th class="prof-col">' + p.nome + '</th>'; }).join('') + '</tr>';
+    var linhasP = '';
+    for (var d=1; d<=diasNoMes; d++) {
+        var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
+        var dw = sdiDiaSemana(sdiAno, sdiMesNum, d);
+        var cls = feriados[dataStr] ? ' style="background:#fff3e0"' : '';
+        linhasP += '<tr' + cls + '><td><b>' + String(d).padStart(2,'0') + '</b></td><td>' + diasSemanaAbrev[dw] + '</td>';
+        profs.forEach(function(p) {
+            var e = (mm[p.id]||{})[dataStr];
+            linhasP += '<td>' + (e ? sdiTextoEntrada(e) : '') + '</td>';
+        });
+        linhasP += '</tr>';
+    }
+    tblP.querySelector('thead').innerHTML = theadP;
+    tblP.querySelector('tbody').innerHTML = linhasP;
 }
 
 var _edProfId = null, _edDataStr = null;
@@ -1925,6 +2018,7 @@ function trocarEscalaEntreProfissionais(profIdA, profIdB) {
     allData.sdi.escalasMensais[mesId][profIdA] = novoA;
     allData.sdi.escalasMensais[mesId][profIdB] = novoB;
     salvarLS(); renderEscalaMensal();
+    sdiToast('Escalas trocadas entre os profissionais.', 'ok');
 }
 function abrirEdicaoDia(profId, dataStr) {
     _edProfId = profId; _edDataStr = dataStr;
@@ -1961,6 +2055,7 @@ function salvarEdicaoDia() {
     if (e) registrarTroca(mesId, _edProfId, _edDataStr, e, entrada);
     allData.sdi.escalasMensais[mesId][_edProfId][_edDataStr] = entrada;
     salvarLS(); fecharModal('modal-editar-dia'); renderEscalaMensal();
+    sdiToast('Dia atualizado.', 'ok');
 }
 function excluirLancamentoDia() {
     var mesId = sdiMesId(sdiAno, sdiMesNum);
@@ -1969,16 +2064,15 @@ function excluirLancamentoDia() {
     if (e) registrarTroca(mesId, _edProfId, _edDataStr, e, null);
     if (allData.sdi.escalasMensais[mesId] && allData.sdi.escalasMensais[mesId][_edProfId]) delete allData.sdi.escalasMensais[mesId][_edProfId][_edDataStr];
     salvarLS(); fecharModal('modal-editar-dia'); renderEscalaMensal();
+    sdiToast('Lançamento removido.', 'ok');
 }
 
 /* ── REGISTRO DE TROCAS (log de alterações após a escala já lançada) ── */
 function sdiTextoEntrada(e) {
-    if (!e) return '(vazio)';
+    if (!e) return '';
     if (e.tipo === 'horario') return e.inicio + '-' + e.fim;
-    if (e.tipo === 'sobreaviso') return 'SOBREAVISO';
-    if (e.tipo === 'folga') return 'FOLGA';
-    if (e.tipo === 'dsr') return 'DSR';
-    if (e.tipo === 'ferias') return 'FÉRIAS';
+    var cod = sdiCodigoDoTipo(e.tipo);
+    if (cod) return cod;
     return (e.obs || e.tipo || '').toUpperCase();
 }
 function registrarTroca(mesId, profId, dataStr, entradaAntiga, entradaNova) {
@@ -2035,19 +2129,23 @@ function gerarRelatorioSDI() {
         var diasNoMes = sdiDiasNoMes(sdiAno, sdiMesNum);
         var profs = allData.sdi.profissionais.slice().sort(function(a,b){ return a.nome.localeCompare(b.nome); });
         var mm = allData.sdi.escalasMensais[mesId] || {};
-        var head = [['Profissional']]; for (var d=1; d<=diasNoMes; d++) head[0].push(String(d).padStart(2,'0'));
-        var body = profs.map(function(p) {
-            var row = [p.nome];
-            for (var d2=1; d2<=diasNoMes; d2++) {
-                var e = (mm[p.id]||{})[sdiDataStr(sdiAno, sdiMesNum, d2)];
-                var txt = '';
-                if (e) { if (e.tipo==='horario') txt = e.inicio+'-'+e.fim; else if (e.tipo==='sobreaviso') txt='SOBR'; else txt = e.tipo.toUpperCase(); }
-                row.push(txt);
-            }
-            return row;
-        });
-        doc.autoTable({ head:head, body:body, startY:startY, styles:{ fontSize:5.5, cellPadding:1 }, headStyles:{ fillColor:[21,101,192] } });
-        doc.save('escala_sdi_' + mesId + '.pdf');
+        var diasSemanaAbrev = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+        var head = [['Dia','Sem'].concat(profs.map(function(p){ return p.nome; }))];
+        var body = [];
+        for (var d=1; d<=diasNoMes; d++) {
+            var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
+            var row = [String(d).padStart(2,'0'), diasSemanaAbrev[sdiDiaSemana(sdiAno, sdiMesNum, d)]];
+            profs.forEach(function(p) {
+                var e = (mm[p.id]||{})[dataStr];
+                row.push(e ? sdiTextoEntrada(e) : '');
+            });
+            body.push(row);
+        }
+        doc.autoTable({ head:head, body:body, startY:startY, styles:{ fontSize:7, cellPadding:1.5, halign:'center' }, headStyles:{ fillColor:[21,101,192] }, columnStyles:{ 0:{fontStyle:'bold'} } });
+        var legY = doc.lastAutoTable.finalY + 6;
+        doc.setFontSize(7);
+        doc.text(SDI_LEGENDA.map(function(l){ return l.cod + ' = ' + l.label; }).join('     '), 14, legY);
+        window.open(doc.output('bloburl'), '_blank');
     } catch(ex) { alert('Erro ao gerar relatório: ' + ex.message); }
 }
 function imprimirEscalaSDI() {
@@ -2081,7 +2179,8 @@ function gerarPdfIndividual(profId) {
         var doc = new window.jspdf.jsPDF();
         sdiDesenharPaginaProf(doc, p, true);
         doc.save('escala_' + p.nome.replace(/\s+/g,'_') + '_' + sdiMesId(sdiAno, sdiMesNum) + '.pdf');
-    } catch(ex) { alert('Erro ao gerar PDF individual: ' + ex.message); }
+        sdiToast('PDF de ' + p.nome + ' gerado.', 'ok');
+    } catch(ex) { sdiToast('Erro ao gerar PDF: ' + ex.message, 'err'); }
 }
 function gerarPdfTodosIndividuais() {
     try {
@@ -2090,7 +2189,41 @@ function gerarPdfTodosIndividuais() {
         var doc = new window.jspdf.jsPDF();
         profs.forEach(function(p, i) { sdiDesenharPaginaProf(doc, p, i===0); });
         doc.save('escalas_individuais_' + sdiMesId(sdiAno, sdiMesNum) + '.pdf');
-    } catch(ex) { alert('Erro ao gerar PDFs individuais: ' + ex.message); }
+        sdiToast('PDFs individuais gerados.', 'ok');
+    } catch(ex) { sdiToast('Erro ao gerar PDFs: ' + ex.message, 'err'); }
+}
+
+/* ── PDF DE SOBREAVISO INDIVIDUAL ── */
+function gerarPdfSobreavisoIndividual(profId) {
+    try {
+        var p = allData.sdi.profissionais.find(function(x){ return x.id===profId; });
+        if (!p) return;
+        var mesId = sdiMesId(sdiAno, sdiMesNum);
+        var atrib = allData.sdi.escalasSobreaviso[mesId] || {};
+        var datas = Object.keys(atrib).filter(function(dt){ return atrib[dt]===profId; }).sort();
+        var doc = new window.jspdf.jsPDF();
+        doc.setFontSize(13); doc.text('Escala de Sobreaviso — ' + sdiNomesMeses()[sdiMesNum-1] + '/' + sdiAno, 14, 14);
+        doc.setFontSize(11); doc.text(p.nome + (p.telefone ? ' — ' + p.telefone : ''), 14, 21);
+        var body = datas.length ? datas.map(function(dt){ return [dt.split('-').reverse().join('/')]; }) : [['Nenhum dia de sobreaviso neste mês']];
+        doc.autoTable({ head:[['Data de Sobreaviso']], body:body, startY:26, styles:{ fontSize:10 }, headStyles:{ fillColor:[230,81,0] } });
+        doc.save('sobreaviso_' + p.nome.replace(/\s+/g,'_') + '_' + mesId + '.pdf');
+        sdiToast('PDF de sobreaviso de ' + p.nome + ' gerado.', 'ok');
+    } catch(ex) { sdiToast('Erro ao gerar PDF: ' + ex.message, 'err'); }
+}
+
+/* ── ENVIO CENTRALIZADO DE ESCALAS (Cadastro) ── */
+function enviarEscalasSdi() {
+    var escala = document.getElementById('env-escala').value;
+    var destino = document.getElementById('env-destino').value;
+    var incluiMensal = (escala === 'mensal' || escala === 'ambas');
+    var incluiSobreaviso = (escala === 'sobreaviso' || escala === 'ambas');
+    if (destino) {
+        if (incluiMensal) gerarPdfIndividual(destino);
+        if (incluiSobreaviso) gerarPdfSobreavisoIndividual(destino);
+    } else {
+        if (incluiMensal) gerarRelatorioSDI();
+        if (incluiSobreaviso) gerarRelatorioSobreavisoSDI();
+    }
 }
 
 /* ── UTILITÁRIOS DE CÓDIGO DE HORÁRIO (usados pelo seed de dados) ── */
@@ -2103,14 +2236,56 @@ function sdiNormalizarHora(h) {
 function parseCodigoSDI(codRaw) {
     var cod = (codRaw || '').trim().toUpperCase();
     if (!cod || cod === '-') return null;
-    if (cod === 'FE') return { tipo:'folga' };
     if (cod === 'DSR') return { tipo:'dsr' };
-    if (cod === 'FF' || cod === 'FÉRIAS' || cod === 'FERIAS') return { tipo:'ferias' };
+    if (cod === 'FE') return { tipo:'ferias' };
+    if (cod === 'BH-') return { tipo:'bh_menos' };
+    if (cod === 'BH+') return { tipo:'bh_mais' };
+    if (cod === 'FF') return { tipo:'folga_feriado' };
+    if (cod === 'ATEST.' || cod === 'ATEST' || cod === 'ATESTADO') return { tipo:'atestado' };
     if (cod.indexOf('-') > -1 && /\d/.test(cod)) {
         var pp = cod.split('-');
         if (pp.length === 2) return { tipo:'horario', inicio: sdiNormalizarHora(pp[0]), fim: sdiNormalizarHora(pp[1]) };
     }
     return { tipo:'outro', obs: cod };
+}
+
+/* legenda oficial de códigos usados na escala */
+var SDI_LEGENDA = [
+    { cod:'DSR',    label:'Descanso Semanal Remunerado' },
+    { cod:'FE',     label:'Férias' },
+    { cod:'BH-',    label:'Folga banco de horas' },
+    { cod:'BH+',    label:'Ajuste de banco de horas' },
+    { cod:'FF',     label:'Folga feriado' },
+    { cod:'Atest.', label:'Atestado' }
+];
+function sdiCodigoDoTipo(tipo) {
+    switch (tipo) {
+        case 'dsr': return 'DSR';
+        case 'ferias': return 'FE';
+        case 'bh_menos': return 'BH-';
+        case 'bh_mais': return 'BH+';
+        case 'folga_feriado': return 'FF';
+        case 'atestado': return 'Atest.';
+        case 'sobreaviso': return 'SOBR';
+        default: return null;
+    }
+}
+
+/* ── MIGRAÇÃO: corrige dados já lançados com o mapeamento antigo (FE↔FF trocados) ── */
+function migrarLegendaSdiV1() {
+    if (allData.sdi.migradoLegendaV1) return;
+    Object.keys(allData.sdi.escalasMensais).forEach(function(mesId) {
+        var mesData = allData.sdi.escalasMensais[mesId];
+        Object.keys(mesData).forEach(function(profId) {
+            Object.keys(mesData[profId]).forEach(function(dataStr) {
+                var e = mesData[profId][dataStr];
+                if (e.tipo === 'folga') e.tipo = 'ferias';
+                else if (e.tipo === 'ferias') e.tipo = 'folga_feriado';
+            });
+        });
+    });
+    allData.sdi.migradoLegendaV1 = true;
+    salvarLS();
 }
 
 /* ── SEED INICIAL: profissionais e sobreaviso de Agosto/2026 (a partir da foto) ── */
@@ -2313,6 +2488,7 @@ function renderHistorico() {
 
 function iniciarSdiUi() {
     sdiInit();
+    migrarLegendaSdiV1();
     seedSdiInicial();
     popularSelectSdiMes();
     renderProfissionais();
@@ -2326,5 +2502,6 @@ iniciarApp();
 iniciarSdiUi();
 
 </script>
+<div id="sdi-toast-wrap"></div>
 </body>
 </html>
