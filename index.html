@@ -210,6 +210,9 @@
         .rest-alert-box ul { margin: 6px 0 0 18px; }
         .sdi-legenda { display: flex; flex-wrap: wrap; gap: 4px 18px; padding: 10px 4px 2px; font-size: 0.72rem; color: #546e7a; border-top: 1px solid #eceff1; margin-top: 8px; }
         .sdi-legenda b { color: #263238; }
+        .sdi-cores-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+        .sdi-cor-item { display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #455a64; }
+        .sdi-cor-item input[type=color] { width: 36px; height: 30px; border: 1.5px solid #e0e7ef; border-radius: 6px; cursor: pointer; padding: 2px; }
         #sdi-toast-wrap { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%); z-index: 9999; display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
         .sdi-toast { background: #263238; color: #fff; padding: 11px 20px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; box-shadow: 0 6px 20px rgba(0,0,0,0.25); opacity: 0; transform: translateY(10px); transition: opacity .25s, transform .25s; white-space: nowrap; }
         .sdi-toast.show { opacity: 1; transform: translateY(0); }
@@ -227,6 +230,7 @@
             body.print-mensal table.grid-mensal-print { font-size: 7pt; white-space: nowrap; }
             body.print-mensal table.grid-mensal-print th, body.print-mensal table.grid-mensal-print td { padding: 2px 4px; }
             body.print-mensal table.grid-mensal-print td.prof-col, body.print-mensal table.grid-mensal-print th.prof-col { position: static; }
+            body.print-mensal table.grid-mensal-print td, body.print-mensal table.grid-mensal-print th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             @page { size: landscape; margin: 8mm; }
             body.print-sobreaviso #print-area-sobreaviso, body.print-sobreaviso #print-area-sobreaviso * { visibility: visible; }
             body.print-sobreaviso #print-area-sobreaviso { position: absolute; left: 0; top: 0; width: 100%; }
@@ -419,6 +423,15 @@
  <button class="btn-sdi p" onclick="gerarRelatorioSDI()">Visualizar Escala</button>
  <button class="btn-sdi gy" onclick="imprimirEscalaSDI()">Imprimir Grade</button>
  <button class="btn-sdi gy" onclick="gerarPdfTodosIndividuais()">PDF Individual — Todos</button>
+ <button class="btn-sdi gy" onclick="toggleCoresSdi()">Personalizar Cores</button>
+ </div>
+
+ <div class="form-card" id="sdi-cores-card" style="display:none">
+ <div class="sdi-cores-grid" id="sdi-cores-grid"></div>
+ <div style="display:flex;gap:8px;margin-top:10px">
+ <button class="btn-save" onclick="salvarCoresSdi()">Salvar Cores</button>
+ <button class="btn-cancel-form" style="display:inline-block" onclick="restaurarCoresPadraoSdi()">Restaurar Padrão</button>
+ </div>
  </div>
  <p style="font-size:0.78rem;color:#90a4ae;margin:-4px 0 8px">Arraste o nome de um profissional (coluna à esquerda) e solte sobre outro para trocar as escalas do mês entre os dois.</p>
  <div class="sdi-section-title">Grade da Escala Mensal <span id="sdi-mes-label-title"></span></div>
@@ -1494,6 +1507,19 @@ function sdiInit() {
     if (!allData.sdi.rotacaoFDS) allData.sdi.rotacaoFDS = {};
     if (!allData.sdi.trocas) allData.sdi.trocas = {};
     if (!allData.sdi.observacoes) allData.sdi.observacoes = {};
+    if (!allData.sdi.cores) allData.sdi.cores = sdiCoresPadrao();
+}
+function sdiCoresPadrao() {
+    return {
+        horario: '#bbdefb',
+        dsr: '#eceff1',
+        ferias: '#fff9c4',
+        bh_menos: '#ffe0b2',
+        bh_mais: '#c8e6c9',
+        folga_feriado: '#f8bbd0',
+        atestado: '#d1c4e9',
+        sobreaviso: '#ffcdd2'
+    };
 }
 
 var sdiAno = new Date().getFullYear();
@@ -1940,14 +1966,16 @@ function renderEscalaMensal() {
         for (var d2=1; d2<=diasNoMes; d2++) {
             var dataStr2 = sdiDataStr(sdiAno, sdiMesNum, d2);
             var e = (mm[p.id]||{})[dataStr2];
-            var cls2 = 'dia-cel', txt = '';
+            var cls2 = 'dia-cel', txt = '', corBg = '';
             if (e) {
                 if (e.tipo === 'sobreaviso') { cls2 += ' bloqueado'; txt = 'SOBR'; }
                 else if (e.tipo === 'horario') { txt = e.inicio+'-'+e.fim; }
-                else { cls2 += ' folga-cel'; txt = sdiTextoEntrada(e); }
+                else { txt = sdiTextoEntrada(e); }
+                corBg = sdiCorDoTipo(e.tipo);
             }
             if (feriados[dataStr2] && e && e.tipo!=='sobreaviso') cls2 += ' feriado-cel';
-            row += '<td class="'+cls2+'" onclick="abrirEdicaoDia(\''+p.id+'\',\''+dataStr2+'\')">'+txt+'</td>';
+            var estilo = corBg ? ' style="background:' + corBg + '"' : '';
+            row += '<td class="'+cls2+'"'+estilo+' onclick="abrirEdicaoDia(\''+p.id+'\',\''+dataStr2+'\')">'+txt+'</td>';
         }
         return row + '</tr>';
     }).join('');
@@ -1970,7 +1998,9 @@ function renderGradeImpressao(profs, diasNoMes, feriados, mm) {
         linhasP += '<tr' + cls + '><td><b>' + String(d).padStart(2,'0') + '</b></td><td>' + diasSemanaAbrev[dw] + '</td>';
         profs.forEach(function(p) {
             var e = (mm[p.id]||{})[dataStr];
-            linhasP += '<td>' + (e ? sdiTextoCompacto(e) : '') + '</td>';
+            var corBg = e ? sdiCorDoTipo(e.tipo) : '';
+            var estilo = corBg ? ' style="background:' + corBg + '"' : '';
+            linhasP += '<td' + estilo + '>' + (e ? sdiTextoCompacto(e) : '') + '</td>';
         });
         linhasP += '</tr>';
     }
@@ -2147,14 +2177,18 @@ function gerarRelatorioSDI() {
         var diasSemanaAbrev = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
         var head = [['Dia','Sem'].concat(profs.map(function(p){ return p.nome; }))];
         var body = [];
+        var tiposMatrix = [];
         for (var d=1; d<=diasNoMes; d++) {
             var dataStr = sdiDataStr(sdiAno, sdiMesNum, d);
             var row = [String(d).padStart(2,'0'), diasSemanaAbrev[sdiDiaSemana(sdiAno, sdiMesNum, d)]];
+            var tiposLinha = [];
             profs.forEach(function(p) {
                 var e = (mm[p.id]||{})[dataStr];
                 row.push(e ? sdiTextoCompacto(e) : '');
+                tiposLinha.push(e ? e.tipo : null);
             });
             body.push(row);
+            tiposMatrix.push(tiposLinha);
         }
         doc.autoTable({
             head:head, body:body, startY:startY,
@@ -2162,7 +2196,16 @@ function gerarRelatorioSDI() {
             headStyles:{ fillColor:[21,101,192], fontSize:fonte },
             columnStyles:{ 0:{fontStyle:'bold'} },
             tableWidth:'auto', horizontalPageBreak:false, pageBreak:'avoid',
-            margin:{ left:8, right:8 }
+            margin:{ left:8, right:8 },
+            didParseCell: function(data) {
+                if (data.section === 'body' && data.column.index >= 2) {
+                    var tipo = tiposMatrix[data.row.index] ? tiposMatrix[data.row.index][data.column.index-2] : null;
+                    if (tipo) {
+                        var cor = sdiCorDoTipo(tipo);
+                        if (cor) data.cell.styles.fillColor = sdiHexParaRgb(cor);
+                    }
+                }
+            }
         });
         var legY = doc.lastAutoTable.finalY + 6;
         doc.setFontSize(7);
@@ -2304,6 +2347,51 @@ function sdiCodigoDoTipo(tipo) {
         case 'sobreaviso': return 'SOBR';
         default: return null;
     }
+}
+
+/* ── PERSONALIZAÇÃO DE CORES POR TIPO DE LANÇAMENTO ── */
+var SDI_TIPOS_COR = [
+    { tipo:'horario',       label:'Horário (trabalhando)' },
+    { tipo:'dsr',            label:'DSR' },
+    { tipo:'ferias',         label:'Férias (FE)' },
+    { tipo:'bh_menos',       label:'Folga banco de horas (BH-)' },
+    { tipo:'bh_mais',        label:'Ajuste banco de horas (BH+)' },
+    { tipo:'folga_feriado',  label:'Folga feriado (FF)' },
+    { tipo:'atestado',       label:'Atestado (Atest.)' },
+    { tipo:'sobreaviso',     label:'Sobreaviso (bloqueado)' }
+];
+function sdiCorDoTipo(tipo) { return (allData.sdi.cores && allData.sdi.cores[tipo]) || sdiCoresPadrao()[tipo] || ''; }
+function sdiHexParaRgb(hex) {
+    hex = (hex || '').replace('#', '');
+    if (hex.length !== 6) return [255,255,255];
+    return [parseInt(hex.slice(0,2),16), parseInt(hex.slice(2,4),16), parseInt(hex.slice(4,6),16)];
+}
+function toggleCoresSdi() {
+    var card = document.getElementById('sdi-cores-card');
+    var abrir = card.style.display === 'none';
+    card.style.display = abrir ? 'block' : 'none';
+    if (abrir) carregarCoresUI();
+}
+function carregarCoresUI() {
+    var grid = document.getElementById('sdi-cores-grid');
+    grid.innerHTML = SDI_TIPOS_COR.map(function(t) {
+        return '<div class="sdi-cor-item"><input type="color" id="cor-' + t.tipo + '" value="' + sdiCorDoTipo(t.tipo) + '"><span>' + t.label + '</span></div>';
+    }).join('');
+}
+function salvarCoresSdi() {
+    var novasCores = {};
+    SDI_TIPOS_COR.forEach(function(t) { novasCores[t.tipo] = document.getElementById('cor-' + t.tipo).value; });
+    allData.sdi.cores = novasCores;
+    salvarLS();
+    renderEscalaMensal();
+    sdiToast('Cores salvas.', 'ok');
+}
+function restaurarCoresPadraoSdi() {
+    allData.sdi.cores = sdiCoresPadrao();
+    salvarLS();
+    carregarCoresUI();
+    renderEscalaMensal();
+    sdiToast('Cores restauradas ao padrão.', 'ok');
 }
 
 /* ── MIGRAÇÃO: corrige dados já lançados com o mapeamento antigo (FE↔FF trocados) ── */
