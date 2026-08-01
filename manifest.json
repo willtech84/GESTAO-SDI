@@ -1,14 +1,25 @@
 {
+  "id": "/",
   "name": "Gerenciamento SDI",
   "short_name": "SDI",
-  "description": "Escalas, Sobreaviso e Controle de Plantão do SDI",
+  "description": "Cadastro de profissionais, escala mensal, escala de sobreaviso, historico de trocas e relatorios do Servico de Diagnostico por Imagem.",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "any",
   "background_color": "#f5f7fa",
   "theme_color": "#1565c0",
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "categories": ["business", "productivity", "medical"],
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "icons/screenshot-wide.png", "sizes": "1280x800", "type": "image/png", "form_factor": "wide", "label": "Cadastro de profissionais" },
+    { "src": "icons/screenshot-narrow.png", "sizes": "390x844", "type": "image/png", "form_factor": "narrow", "label": "Gerenciamento SDI no celular" }
   ]
 }

@@ -9,6 +9,10 @@
  <link rel="icon" type="image/png" sizes="64x64" href="icons/favicon.png">
  <link rel="apple-touch-icon" href="icons/icon-192.png">
  <meta name="theme-color" content="#1565c0">
+ <meta name="mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-capable" content="yes">
+ <meta name="apple-mobile-web-app-status-bar-style" content="default">
+ <meta name="apple-mobile-web-app-title" content="SDI">
  <script src="https://accounts.google.com/gsi/client" async defer></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
@@ -2500,6 +2504,14 @@ function iniciarSdiUi() {
 
 iniciarApp();
 iniciarSdiUi();
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('./sw.js').catch(function(err) {
+            console.warn('Falha ao registrar service worker:', err);
+        });
+    });
+}
 
 </script>
 <div id="sdi-toast-wrap"></div>
